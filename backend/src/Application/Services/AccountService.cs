@@ -1,0 +1,49 @@
+using Application.DTOs;
+using Application.Interfaces;
+using Core.Entities;
+
+
+namespace Application.Services
+{
+    public class AccountService : IAccountService
+    {
+        private readonly IAccountRepository _repository;
+        public AccountService(IAccountRepository repository)
+        {
+            _repository = repository;
+        }
+        public async Task<Account> CreateAccountAsync(Guid userId)
+        {
+            var account = new Account
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Balance = 0m,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _repository.CreateAsync(account);
+            return account;
+        }
+
+        public async Task<Account?> GetAccountByIdAsync(Guid accountId)
+        {
+            return await _repository.GetByIdAsync(accountId);
+        }
+
+        public async Task<List<Account>> GetUserAccountsAsync(Guid userId)
+        {
+            return await _repository.GetByUserIdAsync(userId);
+        }
+        public async Task<AccountBalanceDto> GetBalanceAsync(Guid accountId)
+        {
+            var account = await _repository.GetByIdAsync(accountId)
+                ?? throw new Exception("Account not found");
+
+            return new AccountBalanceDto
+            {
+                AccountId = account.Id,
+                Balance = account.Balance
+            };
+        }
+    }
+}
