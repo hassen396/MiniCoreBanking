@@ -10,13 +10,22 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Infrastructure.Repositories;
+using Microsoft.AspNetCore.RateLimiting;
 
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 
 // Add services to the container.(Service registrations)
-
+//Ratelimiting
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("fixed", opt =>
+    {
+        opt.Window = TimeSpan.FromSeconds(10);
+        opt.PermitLimit = 3;
+    });
+});
 // DbContext + Identity
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(config.GetConnectionString("DefaultConnection")));
@@ -26,6 +35,8 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(opts =>
         opts.Password.RequireNonAlphanumeric = false;
         opts.Password.RequireDigit = false;
         opts.Password.RequireUppercase = false;
+        opts.Password.RequiredLength = 4;
+        opts.Password.RequireLowercase = false;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
@@ -93,7 +104,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-    
+
         policy
         .WithOrigins("http://localhost:3000")
         .AllowAnyHeader()
@@ -110,6 +121,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseRateLimiter();
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();

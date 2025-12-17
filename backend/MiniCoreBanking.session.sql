@@ -3,4 +3,5 @@
 
 -- SELECT * FROM "Transactions";
 
-SELECT * FROM "AspNetUsers";
+-- SELECT * FROM "AspNetUsers";
+SELECT * FROM "AspNetRoles";

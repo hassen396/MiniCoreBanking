@@ -1,49 +1,43 @@
 import React, { useState, type JSX } from 'react'
 import {
-  Avatar,
   Badge,
   Breadcrumb,
   Button,
   Card,
   Col,
-  Collapse,
-  Descriptions,
-  Divider,
   Dropdown,
-  Flex,
   Input,
   Layout,
   Menu,
   Progress,
   Row,
-  Segmented,
   Space,
   Table,
-  Tabs,
   Tag,
-  Timeline,
-  Transfer,
-  Typography,
-  Upload
+  Typography
 } from 'antd'
 import * as Icons from '@ant-design/icons'
 import { Bar } from '@ant-design/charts'
+import { useNavigate } from 'react-router-dom'
 
 type IconProps = {
-  icon: keyof typeof Icons
+  icon: keyof typeof Icons | string
   style?: React.CSSProperties
 }
 
-const Icon: React.FC<IconProps> = ({ icon, ...props }) =>
-  React.createElement(Icons[icon], props)
+const Icon: React.FC<IconProps> = ({ icon, ...props }) => {
+  const Comp = (Icons[icon as keyof typeof Icons] ??
+    Icons.QuestionCircleOutlined) as React.FC<any>
+  return <Comp {...props} />
+}
 
 const { Header, Content, Footer, Sider } = Layout
 
 export default function DashboardPage (): JSX.Element {
+  const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(false)
   const [search, setSearch] = useState('')
-  const [activeKey, setActiveKey] = useState<string | string[]>()
-  const [targetKeys, setTargetKeys] = useState<string[]>([])
+  // Removed unused state
 
   const salesChartConfig = {
     data: [
@@ -84,21 +78,7 @@ export default function DashboardPage (): JSX.Element {
               icon: <Icons.DashboardOutlined />,
               label: 'Dashboard'
             },
-            {
-              key: '/accounts',
-              icon: <Icons.BankOutlined />,
-              label: 'My Accounts'
-            },
-            {
-              key: '/transactions',
-              icon: <Icons.SwapOutlined />,
-              label: 'Transactions'
-            },
-            {
-              key: '/profile',
-              icon: <Icons.UserOutlined />,
-              label: 'Profile'
-            }
+            { key: '/profile', icon: <Icons.UserOutlined />, label: 'Profile' }
           ]}
         />
       </Sider>
@@ -129,9 +109,10 @@ export default function DashboardPage (): JSX.Element {
               <Dropdown
                 menu={{
                   items: [
-                    { key: 'profile', label: 'Profile' },
-                    { key: 'logout', label: 'Logout', danger: true }
-                  ]
+                    { key: '/profile', label: 'Profile' },
+                    { key: '/logout', label: 'Logout', danger: true }
+                  ],
+                  onClick: ({ key }) => navigate(key)
                 }}
               >
                 <Button type='text' icon={<Icon icon='UserOutlined' />}>

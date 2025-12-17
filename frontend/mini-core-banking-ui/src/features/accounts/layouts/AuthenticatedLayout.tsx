@@ -1,53 +1,24 @@
-import { Layout, Avatar, Dropdown, Button } from "antd";
-import { Outlet, useNavigate } from "react-router-dom";
-import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
+import { Layout } from 'antd'
+import { Outlet } from 'react-router-dom'
 
-const { Header, Sider, Content } = Layout;
+const { Content } = Layout
 
 const AuthenticatedLayout = () => {
-  const navigate = useNavigate();
-
-  const logout = () => {
-    localStorage.removeItem("accessToken");
-    navigate("/login");
-  };
+  // Layout wrapper for authenticated routes
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      {/* <Sider collapsible>
-        {/* Sidebar menu here *
-      </Sider> */}
+    <Layout style={{ minHeight: '100vh' }}>
+      {/* Sidebar could be added here if needed */}
 
       <Layout>
-        {/* <Header style={{ background: "#fff", textAlign: "right" }}>
-          <Dropdown
-            menu={{
-              items: [
-                {
-                  key: "profile",
-                  icon: <UserOutlined />,
-                  label: "Profile",
-                  onClick: () => navigate("/profile"),
-                },
-                {
-                  key: "logout",
-                  icon: <LogoutOutlined />,
-                  label: "Logout",
-                  onClick: logout,
-                },
-              ],
-            }}
-          >
-            {/* <Avatar icon={<UserOutlined />} /> *
-          </Dropdown>
-        </Header> */}
+        {/* Header with account dropdown can be added here */}
 
         <Content>
           <Outlet />
         </Content>
       </Layout>
     </Layout>
-  );
-};
+  )
+}
 
-export default AuthenticatedLayout;
+export default AuthenticatedLayout

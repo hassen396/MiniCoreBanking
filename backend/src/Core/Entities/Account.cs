@@ -1,5 +1,7 @@
 
 
+using System.ComponentModel.DataAnnotations;
+
 namespace Core.Entities;
 
 public class Account

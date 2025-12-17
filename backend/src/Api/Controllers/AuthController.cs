@@ -19,7 +19,7 @@ public class AuthController : ControllerBase
         _userManager = userManager;
         _tokenService = tokenService;
     }
-
+    [Authorize(Roles ="Admin")]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] AuthDtos.RegisterRequest request)
     {
