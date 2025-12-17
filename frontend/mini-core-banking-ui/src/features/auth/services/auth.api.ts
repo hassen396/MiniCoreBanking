@@ -11,3 +11,11 @@ export const register = (firstName: string, lastName: string, email: string, pas
   }
   );
 }
+
+export const fetchMe = () => {
+  return api.get("/auth/me", {
+    headers: { 
+      'Authorization': 'Bearer ' + localStorage.getItem("accessToken")
+    }
+  });
+}
