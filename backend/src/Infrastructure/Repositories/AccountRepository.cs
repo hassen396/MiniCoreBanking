@@ -1,6 +1,6 @@
 using Core.Entities;
 using Infrastructure.Data;
-using Application.Interfaces;
+using Application.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Repositories
 {

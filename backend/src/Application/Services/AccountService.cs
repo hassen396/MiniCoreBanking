@@ -1,5 +1,6 @@
 using Application.DTOs;
-using Application.Interfaces;
+using Application.Interfaces.Repositories;
+using Application.Interfaces.Services;
 using Core.Entities;
 
 

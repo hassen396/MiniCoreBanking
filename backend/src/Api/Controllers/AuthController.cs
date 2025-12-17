@@ -1,6 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
-using Application.DTOs;
-using Application.Interfaces;
+using Application.Interfaces.Services;
 using Core.Entities;
 using DotnetJwtAuthTemplate.DTOs;
 using Microsoft.AspNetCore.Authorization;

@@ -1,9 +1,22 @@
 import { Button, Form, Input } from "antd";
+import type { LoginRequest } from "../types";
+import {login } from "../services/auth.api";
+import { useNavigate } from "react-router-dom";
 
 const LoginForm = () => {
-  const onFinish = (values: any) => {
-    console.log("Login values:", values);
+  const navigate = useNavigate();
+  const onFinish = async (values: LoginRequest) => {
+    try {
+      const response = await login(values.email, values.password);
+      console.log("Login successful:", response.data);
+      localStorage.setItem("accessToken", response.data.accessToken);
+      navigate("/dashboard");
+    }
+    catch (error) {
+      console.error("Login failed:", error);
+    }
   };
+    
 
   return (
     <Form layout="vertical" onFinish={onFinish}>

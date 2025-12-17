@@ -15,7 +15,7 @@ public class Account
 
     public DateTime UpdatedAt {get; set; }
 
-    public ApplicationUser User { get; set; }
-    public List<Transaction> Transactions { get; set; }
+    public ApplicationUser User { get; set; } = null!;
+    public List<Transaction> Transactions { get; set; } = [];
 
 }

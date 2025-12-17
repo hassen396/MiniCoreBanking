@@ -3,7 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Application.Interfaces;
+using Application.Interfaces.Services;
 using Core.Entities;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
@@ -36,7 +36,7 @@ public class TokenService : ITokenService
            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
        };
 
-        var roles =  _users.GetRolesAsync(user).Result;
+        var roles = _users.GetRolesAsync(user).Result;
 
         foreach (var role in roles)
         {

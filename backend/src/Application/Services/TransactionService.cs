@@ -1,4 +1,5 @@
-using Application.Interfaces;
+using Application.Interfaces.Services;
+using Application.Interfaces.Repositories;
 using Core.Entities;
 using Core.Enums;
 
