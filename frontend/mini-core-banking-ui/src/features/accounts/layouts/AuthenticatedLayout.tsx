@@ -42,7 +42,7 @@ const AuthenticatedLayout = () => {
           </Dropdown>
         </Header> */}
 
-        <Content style={{ margin: "16px" }}>
+        <Content>
           <Outlet />
         </Content>
       </Layout>
