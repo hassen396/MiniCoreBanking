@@ -59,6 +59,7 @@ export default function DashboardPage (): JSX.Element {
         setAccounts(accRes?.data ?? [])
       } catch (err) {
         message.error('Failed to load dashboard data')
+        navigate('/login')
       } finally {
         setLoading(false)
       }
