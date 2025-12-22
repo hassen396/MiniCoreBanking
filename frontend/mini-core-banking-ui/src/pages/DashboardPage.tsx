@@ -14,7 +14,7 @@ import {
 import * as Icons from '@ant-design/icons'
 import Logo from '../assets/Logo.png'
 import { fetchMe } from '../features/auth/services/auth.api'
-import { getMyAccounts } from '../api/account.api'
+
 
 
 import { useNavigate } from 'react-router-dom'
@@ -58,7 +58,7 @@ export default function DashboardPage (): JSX.Element {
       {/* SIDEBAR */}
       <Sider
         collapsible
-        theme='dark'
+        theme='light'
         collapsed={collapsed}
         onCollapse={setCollapsed}
       >
@@ -71,7 +71,7 @@ export default function DashboardPage (): JSX.Element {
         </div>
 
         <Menu
-          theme='dark'
+          theme='light'
           mode='inline'
           selectedKeys={[location.pathname]}
           onClick={({ key }) => navigate(key)}

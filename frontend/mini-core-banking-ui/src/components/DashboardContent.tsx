@@ -18,20 +18,8 @@ import {
 import * as Icons from '@ant-design/icons';
 import { useEffect, useMemo, useState, type JSX } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchMe } from '../features/auth/services/auth.api';
 import { getMyAccounts } from '../api/account.api';
 import { deposit, transfer, withdraw } from '../api/transaction.api';
-
-// type IconProps = {
-//   icon: keyof typeof Icons | string
-//   style?: React.CSSProperties
-// }
-
-// const Icon: React.FC<IconProps> = ({ icon, ...props }) => {
-//   const Comp = (Icons[icon as keyof typeof Icons] ??
-//     Icons.QuestionCircleOutlined) as React.FC<any>
-//   return <Comp {...props} />
-// }
 
 const { Content } = Layout
 export default function DashboardContent (): JSX.Element {

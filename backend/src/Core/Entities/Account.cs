@@ -1,3 +1,5 @@
+using Core.Enums;
+
 namespace Core.Entities;
 
 public class Account
@@ -6,6 +8,8 @@ public class Account
     public Guid UserId { get; set; }
 
     public decimal Balance { get; set; } = 0;
+
+    public AccountType Type {get; set; } = AccountType.Saving;
 
     public string AccountNumber { get; set; } = string.Empty;
 
