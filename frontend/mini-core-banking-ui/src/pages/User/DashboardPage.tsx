@@ -109,7 +109,16 @@ export default function DashboardPage (): JSX.Element {
                 onClick={() => setCollapsed(!collapsed)}
               />
               <div>
-                <Typography.Title level={4} style={{ margin: 0 }}>
+                <Typography.Title
+                  level={4}
+                  style={{
+                    margin: 0,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '40vw'
+                  }}
+                >
                   {user
                     ? `Welcome, ${user?.firstName ?? user?.userName ?? 'User'}`
                     : 'Dashboard'}

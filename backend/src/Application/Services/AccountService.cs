@@ -2,6 +2,7 @@ using Application.DTOs;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Core.Entities;
+using Core.Enums;
 
 
 namespace Application.Services
@@ -13,14 +14,15 @@ namespace Application.Services
         {
             _repository = repository;
         }
-        public async Task<Account> CreateAccountAsync(Guid userId)
+        public async Task<Account> CreateAccountAsync(Guid userId, AccountType type)
         {
             var account = new Account
             {
                 Id = Guid.NewGuid(),
                 UserId = userId,
                 Balance = 0m,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Type = type
             };
             await _repository.CreateAsync(account);
             return account;

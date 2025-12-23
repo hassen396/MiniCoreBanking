@@ -1,3 +1,4 @@
+using API.DTOs;
 using Application.Interfaces.Services;
 using Core.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -21,16 +22,17 @@ namespace API.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateAccount()
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateAccount([FromBody] CreateAccountDto createAccountDto)
         {
-            var userIdString = _userManager.GetUserId(User);
-            if (userIdString == null)
-                return Unauthorized();
-            if (!Guid.TryParse(userIdString, out var userId))
-            {
-                return BadRequest("Invalid User ID");
-            }
-            var account = await _accountService.CreateAccountAsync(userId);
+            if (string.IsNullOrWhiteSpace(createAccountDto.UserName))
+                return BadRequest("Username is required");
+
+            var targetUser = await _userManager.FindByNameAsync(createAccountDto.UserName);
+            if (targetUser == null)
+                return NotFound("User not found");
+
+            var account = await _accountService.CreateAccountAsync(targetUser.Id, createAccountDto.Type);
             return Ok(account);
         }
 

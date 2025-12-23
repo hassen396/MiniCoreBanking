@@ -110,7 +110,16 @@ export default function AdminDashboard (): JSX.Element {
                 onClick={() => setCollapsed(!collapsed)}
               />
               <div>
-                <Typography.Title level={4} style={{ margin: 0 }}>
+                <Typography.Title
+                  level={4}
+                  style={{
+                    margin: 0,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '40vw'
+                  }}
+                >
                   {admin
                     ? `Welcome, ${
                         admin?.firstName ?? admin?.userName ?? 'User'
