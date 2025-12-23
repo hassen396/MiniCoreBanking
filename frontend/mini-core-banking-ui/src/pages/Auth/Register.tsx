@@ -35,7 +35,7 @@ try {
     >
       <Card style={{ width: 400 }}>
         <Title level={3} style={{ textAlign: 'center' }}>
-          Create Account
+          Create User
         </Title>
 
         <Form

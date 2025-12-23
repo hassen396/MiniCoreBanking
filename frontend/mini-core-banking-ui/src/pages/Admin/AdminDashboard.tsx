@@ -12,13 +12,13 @@ import {
   message,
 } from 'antd'
 import * as Icons from '@ant-design/icons'
-import Logo from '../assets/Logo.png'
-import { fetchMe } from '../features/auth/services/auth.api'
+import Logo from '../../assets/Logo.png'
+import { fetchMe } from '../../features/auth/services/auth.api'
 
 
 
 import { useNavigate } from 'react-router-dom'
-import DashboardContent from '../components/DashboardContent'
+import DashboardContent from '../../components/DashboardContent'
 
 type IconProps = {
   icon: keyof typeof Icons | string
@@ -33,11 +33,11 @@ const Icon: React.FC<IconProps> = ({ icon, ...props }) => {
 
 const { Header, Footer, Sider } = Layout
 
-export default function DashboardPage (): JSX.Element {
+export default function AdminDashboard (): JSX.Element {
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(false)
   const [search, setSearch] = useState('')
-  const [user, setUser] = useState<any>(null)
+  const [admin, setUser] = useState<any>(null)
   
 
   useEffect(() => {
@@ -83,9 +83,9 @@ export default function DashboardPage (): JSX.Element {
             },
             { key: '/profile', icon: <Icons.UserOutlined />, label: 'Profile' },
             {
-              key: '/transfer',
+              key: '/create-account',
               icon: <Icons.TransactionOutlined />,
-              label: 'Transfer'
+              label: 'Create Account'
             }
           ]}
         />
@@ -109,8 +109,8 @@ export default function DashboardPage (): JSX.Element {
                 onClick={() => setCollapsed(!collapsed)}
               />
               <Typography.Title level={4} style={{ margin: 0 }}>
-                {user
-                  ? `Welcome, ${user?.firstName ?? user?.userName ?? 'User'}`
+                {admin
+                  ? `Welcome, ${admin?.firstName ?? admin?.userName ?? 'User'}`
                   : 'Dashboard'}
               </Typography.Title>
             </Space>
@@ -132,8 +132,8 @@ export default function DashboardPage (): JSX.Element {
                 }}
               >
                 <Button type='text' icon={<Icon icon='UserOutlined' />}>
-                  {user
-                    ? user?.firstName ?? user?.userName ?? 'Account'
+                  {admin
+                    ? admin?.firstName ?? admin?.userName ?? 'Account'
                     : 'Account'}
                 </Button>
               </Dropdown>

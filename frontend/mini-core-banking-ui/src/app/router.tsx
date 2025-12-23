@@ -1,19 +1,22 @@
 import { Routes, Route } from 'react-router-dom'
 import LoginPage from '../pages/Auth/LoginPage'
-import DashboardPage from '../pages/DashboardPage'
+import DashboardPage from '../pages/User/DashboardPage'
 import ProfilePage from '../features/accounts/pages/ProfilePage'
 import Register from '../pages/Auth/Register'
 import Logout from '../pages/Auth/Logout'
+import AdminDashboard from '../pages/Admin/AdminDashboard'
+import CreateAccount from '../pages/Account/CreateAccount'
 
 const AppRouter = () => (
   <Routes>
     <Route path='/login' element={<LoginPage />} />
     <Route path='/register' element={<Register />} />
     <Route path='/logout' element={<Logout />} />
-
-    <Route path='/dashboard' element={<DashboardPage />} />
+    <Route path='/create-account' element={<CreateAccount />} />
+    <Route path='/user/dashboard' element={<DashboardPage />} />
     <Route path='/' element={<DashboardPage />} />
     <Route path='/profile' element={<ProfilePage />} />
+    <Route path='/admin/dashboard' element={<AdminDashboard />}/>
   </Routes>
 )
 

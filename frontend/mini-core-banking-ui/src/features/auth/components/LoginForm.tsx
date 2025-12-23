@@ -2,6 +2,7 @@ import { Button, Form, Input, Checkbox, Select, Typography, message } from "antd
 import type { LoginRequest } from "../types";
 import { login } from "../services/auth.api";
 import { useNavigate } from "react-router-dom";
+import { GetRoleFromToken } from "../../../utils/jwt";
 
 const providerOptions = [
   { label: "Default", value: "default" },
@@ -11,21 +12,29 @@ const providerOptions = [
 
 const LoginForm = () => {
   const navigate = useNavigate();
-
   const onFinish = async (values: LoginRequest & { remember?: boolean; providerName?: string }) => {
     try {
       const response = await login(values.email, values.password);
       console.log("Login successful:", response.data);
       localStorage.setItem("accessToken", response.data.accessToken);
+      const role = GetRoleFromToken();
+      console.log('response data', response.data.accessToken)
+      console.log(role, 'this is role')
 
       // Optional: honor "remember" by persisting provider choice
-      if (values.remember && values.providerName) {
-        localStorage.setItem("providerName", values.providerName);
+      // if (values.remember && values.providerName) {
+      //   localStorage.setItem("providerName", values.providerName);
+      // } else {
+      //   localStorage.removeItem("providerName");
+      // }
+      if(role == 'Admin'){
+        navigate("/admin/dashboard");
+      } else if (role == 'User') {
+        navigate('/user/dashboard');
+        console.log('role is ', role)
       } else {
-        localStorage.removeItem("providerName");
+        navigate('/logout')
       }
-
-      navigate("/dashboard");
     } catch (error) {
       message.error("Login failed. Please check your credentials and try again.");
       console.error("Login failed:", error);

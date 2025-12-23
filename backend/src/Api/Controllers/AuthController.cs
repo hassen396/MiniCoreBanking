@@ -25,7 +25,7 @@ public class AuthController : ControllerBase
     {
         var user = new ApplicationUser
         {
-            UserName = request.UserName ?? request.Email,
+            UserName = request.Email,
             Email = request.Email,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
@@ -67,7 +67,7 @@ public class AuthController : ControllerBase
     {
         var user = new ApplicationUser
         {
-            UserName = request.UserName ?? request.Email,
+            UserName =  request.Email,
             Email = request.Email,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
@@ -80,7 +80,7 @@ public class AuthController : ControllerBase
             return BadRequest(result.Errors);
         }
         await _userManager.AddToRoleAsync(user, "Admin");
-        return Ok("user created successfully");
+        return Ok("admin created successfully");
     }
 
     [HttpPost("login")]
