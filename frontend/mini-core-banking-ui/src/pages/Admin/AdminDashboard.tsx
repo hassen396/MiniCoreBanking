@@ -9,16 +9,17 @@ import {
   Row,
   Space,
   Typography,
-  message,
+  Breadcrumb,
+  message
 } from 'antd'
 import * as Icons from '@ant-design/icons'
 import Logo from '../../assets/Logo.png'
 import { fetchMe } from '../../features/auth/services/auth.api'
 
-
-
 import { useNavigate } from 'react-router-dom'
 import DashboardContent from '../../components/DashboardContent'
+import ProfilePage from '../../features/accounts/pages/ProfilePage'
+import CreateAccount from '../Account/CreateAccount'
 
 type IconProps = {
   icon: keyof typeof Icons | string
@@ -38,7 +39,7 @@ export default function AdminDashboard (): JSX.Element {
   const [collapsed, setCollapsed] = useState(false)
   const [search, setSearch] = useState('')
   const [admin, setUser] = useState<any>(null)
-  
+  const [activeKey, setActiveKey] = useState<string>('/dashboard')
 
   useEffect(() => {
     const load = async () => {
@@ -73,8 +74,8 @@ export default function AdminDashboard (): JSX.Element {
         <Menu
           theme='light'
           mode='inline'
-          selectedKeys={[location.pathname]}
-          onClick={({ key }) => navigate(key)}
+          selectedKeys={[activeKey]}
+          onClick={({ key }) => setActiveKey(String(key))}
           items={[
             {
               key: '/dashboard',
@@ -95,7 +96,7 @@ export default function AdminDashboard (): JSX.Element {
       <Layout>
         {/* HEADER */}
         <Header style={{ background: '#fff' }}>
-          <Row justify='space-between' align='middle'>
+          <Row justify='space-between' align='middle' wrap={false}>
             <Space>
               <Button
                 type='text'
@@ -108,11 +109,27 @@ export default function AdminDashboard (): JSX.Element {
                 }
                 onClick={() => setCollapsed(!collapsed)}
               />
-              <Typography.Title level={4} style={{ margin: 0 }}>
-                {admin
-                  ? `Welcome, ${admin?.firstName ?? admin?.userName ?? 'User'}`
-                  : 'Dashboard'}
-              </Typography.Title>
+              <div>
+                <Typography.Title level={4} style={{ margin: 0 }}>
+                  {admin
+                    ? `Welcome, ${
+                        admin?.firstName ?? admin?.userName ?? 'User'
+                      }`
+                    : 'Dashboard'}
+                </Typography.Title>
+                <Breadcrumb>
+                  <Breadcrumb.Item>Home</Breadcrumb.Item>
+                  <Breadcrumb.Item>
+                    {(
+                      {
+                        '/dashboard': 'Dashboard',
+                        '/profile': 'Profile',
+                        '/create-account': 'Create Account'
+                      } as Record<string, string>
+                    )[activeKey] ?? 'Dashboard'}
+                  </Breadcrumb.Item>
+                </Breadcrumb>
+              </div>
             </Space>
 
             <Space>
@@ -121,6 +138,7 @@ export default function AdminDashboard (): JSX.Element {
                 prefix={<Icon icon='SearchOutlined' />}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
+                style={{ width: 260, maxWidth: '30vw' }}
               />
               <Dropdown
                 menu={{
@@ -128,7 +146,10 @@ export default function AdminDashboard (): JSX.Element {
                     { key: '/profile', label: 'Profile' },
                     { key: '/logout', label: 'Logout', danger: true }
                   ],
-                  onClick: ({ key }) => navigate(key)
+                  onClick: ({ key }) => {
+                    if (key === '/profile') setActiveKey('/profile')
+                    else navigate(String(key))
+                  }
                 }}
               >
                 <Button type='text' icon={<Icon icon='UserOutlined' />}>
@@ -145,7 +166,11 @@ export default function AdminDashboard (): JSX.Element {
         </Header>
 
         {/* CONTENT */}
-        <DashboardContent />
+        {activeKey === '/profile' && <ProfilePage />}
+        {activeKey === '/create-account' && <CreateAccount />}
+        {activeKey !== '/profile' && activeKey !== '/create-account' && (
+          <DashboardContent />
+        )}
         {/* FOOTER */}
         <Footer style={{ textAlign: 'center' }}>
           © MiniCoreBanking Dashboard

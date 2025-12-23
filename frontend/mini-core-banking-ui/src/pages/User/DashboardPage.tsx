@@ -9,6 +9,7 @@ import {
   Row,
   Space,
   Typography,
+  Breadcrumb,
   message
 } from 'antd'
 import * as Icons from '@ant-design/icons'
@@ -17,6 +18,7 @@ import { fetchMe } from '../../features/auth/services/auth.api'
 
 import { useNavigate } from 'react-router-dom'
 import DashboardContent from '../../components/DashboardContent'
+import ProfilePage from '../../features/accounts/pages/ProfilePage'
 
 type IconProps = {
   icon: keyof typeof Icons | string
@@ -36,6 +38,7 @@ export default function DashboardPage (): JSX.Element {
   const [collapsed, setCollapsed] = useState(false)
   const [search, setSearch] = useState('')
   const [user, setUser] = useState<any>(null)
+  const [activeKey, setActiveKey] = useState<string>('/dashboard')
 
   useEffect(() => {
     const load = async () => {
@@ -70,8 +73,8 @@ export default function DashboardPage (): JSX.Element {
         <Menu
           theme='light'
           mode='inline'
-          selectedKeys={[location.pathname]}
-          onClick={({ key }) => navigate(key)}
+          selectedKeys={[activeKey]}
+          onClick={({ key }) => setActiveKey(String(key))}
           items={[
             {
               key: '/dashboard',
@@ -92,7 +95,7 @@ export default function DashboardPage (): JSX.Element {
       <Layout>
         {/* HEADER */}
         <Header style={{ background: '#fff' }}>
-          <Row justify='space-between' align='middle'>
+          <Row justify='space-between' align='middle' wrap={false}>
             <Space>
               <Button
                 type='text'
@@ -105,11 +108,25 @@ export default function DashboardPage (): JSX.Element {
                 }
                 onClick={() => setCollapsed(!collapsed)}
               />
-              <Typography.Title level={4} style={{ margin: 0 }}>
-                {user
-                  ? `Welcome, ${user?.firstName ?? user?.userName ?? 'User'}`
-                  : 'Dashboard'}
-              </Typography.Title>
+              <div>
+                <Typography.Title level={4} style={{ margin: 0 }}>
+                  {user
+                    ? `Welcome, ${user?.firstName ?? user?.userName ?? 'User'}`
+                    : 'Dashboard'}
+                </Typography.Title>
+                <Breadcrumb>
+                  <Breadcrumb.Item>Home</Breadcrumb.Item>
+                  <Breadcrumb.Item>
+                    {(
+                      {
+                        '/dashboard': 'Dashboard',
+                        '/profile': 'Profile',
+                        '/transfer': 'Transfer'
+                      } as Record<string, string>
+                    )[location.pathname] ?? 'Dashboard'}
+                  </Breadcrumb.Item>
+                </Breadcrumb>
+              </div>
             </Space>
 
             <Space>
@@ -118,6 +135,7 @@ export default function DashboardPage (): JSX.Element {
                 prefix={<Icon icon='SearchOutlined' />}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
+                style={{ width: 260, maxWidth: '30vw' }}
               />
               <Dropdown
                 menu={{
@@ -125,7 +143,10 @@ export default function DashboardPage (): JSX.Element {
                     { key: '/profile', label: 'Profile' },
                     { key: '/logout', label: 'Logout', danger: true }
                   ],
-                  onClick: ({ key }) => navigate(key)
+                  onClick: ({ key }) => {
+                    if (key === '/profile') setActiveKey('/profile')
+                    else navigate(String(key))
+                  }
                 }}
               >
                 <Button type='text' icon={<Icon icon='UserOutlined' />}>
@@ -142,7 +163,7 @@ export default function DashboardPage (): JSX.Element {
         </Header>
 
         {/* CONTENT */}
-        <DashboardContent />
+        {activeKey === '/profile' ? <ProfilePage /> : <DashboardContent />}
         {/* FOOTER */}
         <Footer style={{ textAlign: 'center' }}>
           © MiniCoreBanking Dashboard
