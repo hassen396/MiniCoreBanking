@@ -20,21 +20,21 @@ namespace API.Controllers
         [HttpPost("deposit")]
         public async Task<IActionResult> Deposit([FromBody] DepositDto dto)
         {
-            await _transactionService.DepositAsync(dto.AccountId, dto.Amount);
+            await _transactionService.DepositAsync(dto.AccountNumber, dto.Amount);
             return Ok("Deposit successful");
         }
 
         [HttpPost("withdraw")]
         public async Task<IActionResult> Withdraw([FromBody] WithdrawDto dto)
         {
-            await _transactionService.WithdrawAsync(dto.AccountId, dto.Amount);
+            await _transactionService.WithdrawAsync(dto.AccountNumber, dto.Amount);
             return Ok("Withdrawal successful");
         }
 
         [HttpPost("transfer")]
         public async Task<IActionResult> Transfer([FromBody] TransferDto dto)
         {
-            await _transactionService.TransferAsync(dto.FromAccountId, dto.ToAccountId, dto.Amount);
+            await _transactionService.TransferAsync(dto.FromAccountNumber, dto.ToAccountNumber, dto.Amount);
             return Ok("Transfer successful");
         }
     }

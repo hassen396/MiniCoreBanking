@@ -3,7 +3,7 @@ namespace Application.DTOs
 {
     public class DepositDto
     {
-        public Guid AccountId { get; set; }
+        public required string AccountNumber { get; set; }
         public decimal Amount { get; set; }
     }
 }

@@ -4,7 +4,7 @@ namespace Application.Interfaces.Repositories
 {
     public interface IBankAccountRepository
     {
-        Task<Account?> GetByIdAsync(Guid id);
+        Task<Account?> GetByAccountNumberAsync(string accountNumber);
         Task SaveChangesAsync();
     }
 }

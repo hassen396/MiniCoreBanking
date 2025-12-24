@@ -18,19 +18,19 @@ namespace Application.Services
             _transactionRepo = transactionRepo;
         }
 
-        public async Task DepositAsync(Guid accountId, decimal amount)
+        public async Task DepositAsync(string accountNumber, decimal amount)
         {
             if (amount <= 0)
                 throw new Exception("Amount must be greater than zero");
 
-            var account = await _accountRepo.GetByIdAsync(accountId)
+            var account = await _accountRepo.GetByAccountNumberAsync(accountNumber)
                 ?? throw new Exception("Account not found");
 
             account.Balance += amount;
 
             await _transactionRepo.AddAsync(new Transaction
             {
-                AccountId = accountId,
+                AccountNumber = accountNumber,
                 Amount = amount,
                 Type = TransactionType.Deposit
             });
@@ -39,12 +39,12 @@ namespace Application.Services
             await _transactionRepo.SaveChangesAsync();
         }
 
-        public async Task WithdrawAsync(Guid accountId, decimal amount)
+        public async Task WithdrawAsync(string accountNumber, decimal amount)
         {
             if (amount <= 0)
                 throw new Exception("Amount must be greater than zero");
 
-            var account = await _accountRepo.GetByIdAsync(accountId)
+            var account = await _accountRepo.GetByAccountNumberAsync(accountNumber)
                 ?? throw new Exception("Account not found");
 
             if (account.Balance < amount)
@@ -54,7 +54,7 @@ namespace Application.Services
 
             await _transactionRepo.AddAsync(new Transaction
             {
-                AccountId = accountId,
+                AccountNumber = accountNumber,
                 Amount = amount,
                 Type = TransactionType.Withdraw
             });
@@ -63,15 +63,15 @@ namespace Application.Services
             await _transactionRepo.SaveChangesAsync();
         }
 
-        public async Task TransferAsync(Guid fromAccountId, Guid toAccountId, decimal amount)
+        public async Task TransferAsync(string fromAccountNumber, string toAccountNumber, decimal amount)
         {
             if (amount <= 0)
                 throw new Exception("Invalid amount");
 
-            var fromAccount = await _accountRepo.GetByIdAsync(fromAccountId)
+            var fromAccount = await _accountRepo.GetByAccountNumberAsync(fromAccountNumber)
                 ?? throw new Exception("Source account not found");
 
-            var toAccount = await _accountRepo.GetByIdAsync(toAccountId)
+            var toAccount = await _accountRepo.GetByAccountNumberAsync(toAccountNumber)
                 ?? throw new Exception("Destination account not found");
 
             if (fromAccount.Balance < amount)
@@ -82,14 +82,14 @@ namespace Application.Services
 
             await _transactionRepo.AddAsync(new Transaction
             {
-                AccountId = fromAccountId,
+                AccountNumber = fromAccountNumber,
                 Amount = amount,
                 Type = TransactionType.Transfer
             });
 
             await _transactionRepo.AddAsync(new Transaction
             {
-                AccountId = toAccountId,
+                AccountNumber = toAccountNumber,
                 Amount = amount,
                 Type = TransactionType.Transfer
             });

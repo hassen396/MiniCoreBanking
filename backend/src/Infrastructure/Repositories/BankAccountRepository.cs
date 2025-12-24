@@ -14,9 +14,9 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<Account?> GetByIdAsync(Guid id)
+        public async Task<Account?> GetByAccountNumberAsync(string accountNumber)
         {
-            return await _context.Accounts.FirstOrDefaultAsync(x => x.Id == id);
+            return await _context.Accounts.FirstOrDefaultAsync(x => x.AccountNumber == accountNumber);
         }
 
         public async Task SaveChangesAsync()
