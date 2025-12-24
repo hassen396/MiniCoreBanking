@@ -21,8 +21,15 @@ import { useNavigate } from 'react-router-dom';
 import { getMyAccounts } from '../api/account.api';
 import { deposit, transfer, withdraw } from '../api/transaction.api';
 
+type DashboardContentProps = {
+  depositOpen?: boolean
+  onChangeDepositOpen?: (open: boolean) => void
+  withdrawOpen?: boolean
+  onChangeWithdrawOpen?: (open: boolean) => void
+}
+
 const { Content } = Layout
-export default function DashboardContent (): JSX.Element {
+export default function DashboardContent (props: DashboardContentProps): JSX.Element {
   const navigate = useNavigate()
   const [loading, setLoading] = useState<boolean>(false)
 
@@ -71,12 +78,21 @@ const [form] = Form.useForm()
     color: '#1677ff'
   }
 
+  // Helpers to support controlled open state from parent
+  const depositOpen = props.depositOpen ?? isDepositOpen
+  const setDepositOpenSafe = (open: boolean) =>
+    props.onChangeDepositOpen ? props.onChangeDepositOpen(open) : setDepositOpen(open)
+
+  const withdrawOpen = props.withdrawOpen ?? isWithdrawOpen
+  const setWithdrawOpenSafe = (open: boolean) =>
+    props.onChangeWithdrawOpen ? props.onChangeWithdrawOpen(open) : setWithdrawOpen(open)
+
   const onDeposit = async () => {
     try {
       const values = await form.validateFields()
-      await deposit(values.accountId, values.amount)
+      await deposit(values.accountNumber, values.amount)
       message.success('Deposit successful')
-      setDepositOpen(false)
+      setDepositOpenSafe(false)
     } catch (err) {
       // validation or API error
       if ((err as any)?.errorFields) return
@@ -87,9 +103,9 @@ const [form] = Form.useForm()
   const onWithdraw = async () => {
     try {
       const values = await form.validateFields()
-      await withdraw(values.accountId, values.amount)
+      await withdraw(values.accountNumber, values.amount)
       message.success('Withdraw successful')
-      setWithdrawOpen(false)
+      setWithdrawOpenSafe(false)
     } catch (err) {
       if ((err as any)?.errorFields) return
       message.error('Withdraw failed')
@@ -99,7 +115,7 @@ const [form] = Form.useForm()
   const onTransfer = async () => {
     try {
       const values = await transferForm.validateFields()
-      await transfer(values.fromAccountId, values.toAccountId, values.amount)
+      await transfer(values.fromAccountNumber, values.toAccountNumber, values.amount)
       message.success('Transfer successful')
       setTransferOpen(false)
     } catch (err) {
@@ -152,7 +168,7 @@ const [form] = Form.useForm()
             <Row justify='space-between'>
               <Col>
 
-                <Button type='primary' onClick={() => setDepositOpen(true)}>
+                <Button type='primary' onClick={() => setDepositOpenSafe(true)}>
                   Deposit
                 </Button>
               </Col>
@@ -165,7 +181,7 @@ const [form] = Form.useForm()
             <Row justify='space-between'>
               <Col>
 
-                <Button onClick={() => setWithdrawOpen(true)}>Withdraw</Button>
+                <Button onClick={() => setWithdrawOpenSafe(true)}>Withdraw</Button>
               </Col>
               <Icons.ArrowUpOutlined style={{ fontSize: 32 }} />
             </Row>
@@ -202,10 +218,10 @@ const [form] = Form.useForm()
               ]}
             />
             <Space style={{ marginTop: 16 }}>
-              <Button type='primary' onClick={() => setDepositOpen(true)}>
+              <Button type='primary' onClick={() => setDepositOpenSafe(true)}>
                 Deposit
               </Button>
-              <Button onClick={() => setWithdrawOpen(true)}>Withdraw</Button>
+              <Button onClick={() => setWithdrawOpenSafe(true)}>Withdraw</Button>
               <Button type='dashed' onClick={() => setTransferOpen(true)}>
                 Transfer
               </Button>
@@ -214,23 +230,24 @@ const [form] = Form.useForm()
         </Col>
       </Row>
 
-      {/* Deposit / Withdraw Modal */}
+      {/* Deposit / Withdraw Modal */
+      }
       <Modal
         title='Deposit'
-        open={isDepositOpen}
+        open={depositOpen}
         onOk={onDeposit}
-        onCancel={() => setDepositOpen(false)}
+        onCancel={() => setDepositOpenSafe(false)}
       >
         <Form form={form} layout='vertical'>
           <Form.Item
-            name='accountId'
+            name='accountNumber'
             label='Account'
             rules={[{ required: true }]}
           >
             <Select
               options={accounts.map((a: any) => ({
-                value: a.id,
-                label: a.accountNumber ?? a.id
+                value: a.accountNumber,
+                label: a.accountNumber
               }))}
             />
           </Form.Item>
@@ -246,21 +263,23 @@ const [form] = Form.useForm()
 
       <Modal
         title='Withdraw'
-        open={isWithdrawOpen}
+        open={withdrawOpen}
         onOk={onWithdraw}
-        onCancel={() => setWithdrawOpen(false)}
+        onCancel={() => setWithdrawOpenSafe(false)}
       >
         <Form form={form} layout='vertical'>
           <Form.Item
-            name='accountId'
-            label='Account'
+            name='accountNumber'
+            label='Account Number'
             rules={[{ required: true }]}
           >
             <Select
+            
               options={accounts.map((a: any) => ({
-                value: a.id,
-                label: a.accountNumber ?? a.id
-              }))}
+                value: a.accountNumber,
+                label: a.accountNumber
+              }))
+            }
             />
           </Form.Item>
           <Form.Item
@@ -282,22 +301,22 @@ const [form] = Form.useForm()
       >
         <Form form={transferForm} layout='vertical'>
           <Form.Item
-            name='fromAccountId'
+            name='fromAccountNumber'
             label='From'
             rules={[{ required: true }]}
           >
             <Select
               options={accounts.map((a: any) => ({
-                value: a.id,
-                label: a.accountNumber ?? a.id
+                value: a.accountNumber,
+                label: a.accountNumber
               }))}
             />
           </Form.Item>
-          <Form.Item name='toAccountId' label='To' rules={[{ required: true }]}>
+          <Form.Item name='toAccountNumber' label='To' rules={[{ required: true }]}>
             <Select
               options={accounts.map((a: any) => ({
-                value: a.id,
-                label: a.accountNumber ?? a.id
+                value: a.accountNumber,
+                label: a.accountNumber
               }))}
             />
           </Form.Item>

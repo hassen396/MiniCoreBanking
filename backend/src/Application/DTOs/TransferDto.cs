@@ -5,5 +5,6 @@ namespace Application.DTOs
         public required string FromAccountNumber { get; set; }
         public required string ToAccountNumber { get; set; }
         public decimal Amount { get; set; }
+        public string? Remarks { get; set; }
     }
 }

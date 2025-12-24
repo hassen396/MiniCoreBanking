@@ -40,6 +40,8 @@ export default function DashboardPage (): JSX.Element {
   const [search, setSearch] = useState('')
   const [user, setUser] = useState<any>(null)
   const [activeKey, setActiveKey] = useState<string>('/dashboard')
+  const [depositOpen, setDepositOpen] = useState<boolean>(false)
+  const [withdrawOpen, setWithdrawOpen] = useState<boolean>(false)
 
   useEffect(() => {
     const load = async () => {
@@ -75,7 +77,20 @@ export default function DashboardPage (): JSX.Element {
           theme='light'
           mode='inline'
           selectedKeys={[activeKey]}
-          onClick={({ key }) => setActiveKey(String(key))}
+          onClick={({ key }) => {
+            const k = String(key)
+            if (k === '/deposit') {
+              setActiveKey('/dashboard')
+              setDepositOpen(true)
+              return
+            }
+            if (k === '/withdraw') {
+              setActiveKey('/dashboard')
+              setWithdrawOpen(true)
+              return
+            }
+            setActiveKey(k)
+          }}
           items={[
             {
               key: '/dashboard',
@@ -87,6 +102,16 @@ export default function DashboardPage (): JSX.Element {
               key: '/transfer',
               icon: <Icons.TransactionOutlined />,
               label: 'Transfer'
+            },
+            {
+              key: '/deposit',
+              icon: <Icons.ArrowDownOutlined />,
+              label: 'Deposit'
+            },
+            {
+              key: '/withdraw',
+              icon: <Icons.ArrowUpOutlined />,
+              label: 'Withdraw'
             }
           ]}
         />
@@ -133,7 +158,7 @@ export default function DashboardPage (): JSX.Element {
                         '/profile': 'Profile',
                         '/transfer': 'Transfer'
                       } as Record<string, string>
-                    )[location.pathname] ?? 'Dashboard'}
+                    )[activeKey] ?? 'Dashboard'}
                   </Breadcrumb.Item>
                 </Breadcrumb>
               </div>
@@ -173,11 +198,20 @@ export default function DashboardPage (): JSX.Element {
         </Header>
 
         {/* CONTENT */}
-        {activeKey === '/profile' ? <ProfilePage />  : activeKey === "/transfer" ? <Transfer /> : <DashboardContent />}
+        {activeKey === '/profile' ? (
+          <ProfilePage />
+        ) : activeKey === '/transfer' ? (
+          <Transfer />
+        ) : (
+          <DashboardContent
+            depositOpen={depositOpen}
+            onChangeDepositOpen={setDepositOpen}
+            withdrawOpen={withdrawOpen}
+            onChangeWithdrawOpen={setWithdrawOpen}
+          />
+        )}
         {/* FOOTER */}
-        <Footer style={{ textAlign: 'center' }}>
-          © MiniCoreBanking
-        </Footer>
+        <Footer style={{ textAlign: 'center' }}>© MiniCoreBanking</Footer>
       </Layout>
     </Layout>
   )

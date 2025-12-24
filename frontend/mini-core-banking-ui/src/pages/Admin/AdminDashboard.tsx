@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom'
 import DashboardContent from '../../components/DashboardContent'
 import ProfilePage from '../../features/accounts/pages/ProfilePage'
 import CreateAccount from '../Account/CreateAccount'
+import Transfer from '../Account/Transfer'
 
 type IconProps = {
   icon: keyof typeof Icons | string
@@ -85,8 +86,13 @@ export default function AdminDashboard (): JSX.Element {
             { key: '/profile', icon: <Icons.UserOutlined />, label: 'Profile' },
             {
               key: '/create-account',
-              icon: <Icons.TransactionOutlined />,
+              icon: <Icons.PlusCircleTwoTone />,
               label: 'Create Account'
+            },
+            {
+              key: '/transfer',
+              icon: <Icons.TransactionOutlined />,
+              label: 'Transfer'
             }
           ]}
         />
@@ -133,7 +139,8 @@ export default function AdminDashboard (): JSX.Element {
                       {
                         '/dashboard': 'Dashboard',
                         '/profile': 'Profile',
-                        '/create-account': 'Create Account'
+                        '/create-account': 'Create Account',
+                        '/transfer': 'Transfer'
                       } as Record<string, string>
                     )[activeKey] ?? 'Dashboard'}
                   </Breadcrumb.Item>
@@ -177,7 +184,8 @@ export default function AdminDashboard (): JSX.Element {
         {/* CONTENT */}
         {activeKey === '/profile' && <ProfilePage />}
         {activeKey === '/create-account' && <CreateAccount />}
-        {activeKey !== '/profile' && activeKey !== '/create-account' && (
+        {activeKey === '/transfer' && <Transfer />}
+        {activeKey !== '/profile' && activeKey !== '/create-account'  && activeKey !== '/transfer' && (
           <DashboardContent />
         )}
         {/* FOOTER */}

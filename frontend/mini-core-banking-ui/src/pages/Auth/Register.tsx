@@ -1,5 +1,5 @@
 
-import { Form, Input, Button, Card, Typography } from 'antd';
+import { Form, Input, Button, Card, Typography, message } from 'antd';
 import { register } from '../../features/auth/services/auth.api';
 import { useNavigate } from 'react-router-dom';
 type UserTypes = {
@@ -16,9 +16,10 @@ const Register = () => {
 try {
     const response = await register(values.firstName, values.lastName, values.email, values.password);
     console.log("Registration successful:", response.data);
+    message.success("Registration successful! Please log in.");
     navigate("/login");
   } catch (error) {
-    console.error("Registration failed:", error);
+    message.error("Registration failed: " + error);
   }
     // TODO: call your API here
   };

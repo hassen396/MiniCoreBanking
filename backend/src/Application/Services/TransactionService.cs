@@ -65,6 +65,8 @@ namespace Application.Services
 
         public async Task TransferAsync(string fromAccountNumber, string toAccountNumber, decimal amount)
         {
+        if(fromAccountNumber == toAccountNumber)
+         throw new Exception("Cannot transfer to the same account");      
             if (amount <= 0)
                 throw new Exception("Invalid amount");
 
