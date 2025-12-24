@@ -5,8 +5,9 @@ namespace Application.Interfaces.Repositories
     public interface IAccountRepository
     {
         Task<Account> CreateAsync(Account account);
-        Task<Account?> GetByIdAsync(Guid id); 
+        Task<Account?> GetByIdAsync(Guid id);
         Task<List<Account>> GetByUserIdAsync(Guid userId);
+        Task<string> GetNextAccountNumberAsync();
         Task SaveChangesAsync();
     }
 }

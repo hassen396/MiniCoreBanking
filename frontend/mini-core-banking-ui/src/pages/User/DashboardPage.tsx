@@ -19,6 +19,7 @@ import { fetchMe } from '../../features/auth/services/auth.api'
 import { useNavigate } from 'react-router-dom'
 import DashboardContent from '../../components/DashboardContent'
 import ProfilePage from '../../features/accounts/pages/ProfilePage'
+import Transfer from '../Account/Transfer'
 
 type IconProps = {
   icon: keyof typeof Icons | string
@@ -172,10 +173,10 @@ export default function DashboardPage (): JSX.Element {
         </Header>
 
         {/* CONTENT */}
-        {activeKey === '/profile' ? <ProfilePage /> : <DashboardContent />}
+        {activeKey === '/profile' ? <ProfilePage />  : activeKey === "/transfer" ? <Transfer /> : <DashboardContent />}
         {/* FOOTER */}
         <Footer style={{ textAlign: 'center' }}>
-          © MiniCoreBanking Dashboard
+          © MiniCoreBanking
         </Footer>
       </Layout>
     </Layout>

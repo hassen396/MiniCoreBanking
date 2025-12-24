@@ -16,13 +16,15 @@ namespace Application.Services
         }
         public async Task<Account> CreateAccountAsync(Guid userId, AccountType type)
         {
+            var nextNumber = await _repository.GetNextAccountNumberAsync();
             var account = new Account
             {
                 Id = Guid.NewGuid(),
                 UserId = userId,
                 Balance = 0m,
                 CreatedAt = DateTime.UtcNow,
-                Type = type
+                Type = type,
+                AccountNumber = nextNumber
             };
             await _repository.CreateAsync(account);
             return account;

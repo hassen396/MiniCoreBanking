@@ -24,8 +24,25 @@ namespace Infrastructure.Repositories
 
         public async Task<List<Account>> GetByUserIdAsync(Guid userId)
         {
-            var accounts = await _context.Accounts.Where(a=> a.UserId == userId).ToListAsync();
-            return  accounts;
+            var accounts = await _context.Accounts.Where(a => a.UserId == userId).ToListAsync();
+            return accounts;
+        }
+
+        public async Task<string> GetNextAccountNumberAsync()
+        {
+            var numbers = await _context.Accounts
+                .Select(a => a.AccountNumber)
+                .ToListAsync();
+
+            long max = 0;
+            foreach (var n in numbers)
+            {
+                if (!string.IsNullOrWhiteSpace(n) && long.TryParse(n, out var v))
+                {
+                    if (v > max) max = v;
+                }
+            }
+            return (max + 1).ToString();
         }
 
         public async Task SaveChangesAsync()
