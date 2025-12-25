@@ -29,7 +29,7 @@ export default function DashboardContent (): JSX.Element {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
 
-  const [accounts, setAccounts] = useState<any[]>([])          // user accounts
+  const [accounts, setAccounts] = useState<any[]>([]) // user accounts
   const [adminAccounts, setAdminAccounts] = useState<any[]>([]) // paginated admin accounts
 
   const [usersCount, setUsersCount] = useState(0)
@@ -85,11 +85,14 @@ export default function DashboardContent (): JSX.Element {
     [accounts]
   )
 
-  const chartData = useMemo(() =>
-    accounts.map(a => ({
-      name: a.accountNumber,
-      value: a.balance ?? 0
-    })), [accounts])
+  const chartData = useMemo(
+    () =>
+      accounts.map(a => ({
+        name: a.accountNumber,
+        value: a.balance ?? 0
+      })),
+    [accounts]
+  )
 
   const chartConfig = {
     data: chartData,
@@ -133,7 +136,8 @@ export default function DashboardContent (): JSX.Element {
 
   const onTransfer = async () => {
     try {
-      const { fromAccountNumber, toAccountNumber, amount } = transferForm.getFieldsValue()
+      const { fromAccountNumber, toAccountNumber, amount } =
+        transferForm.getFieldsValue()
       if (!fromAccountNumber || !toAccountNumber || !amount) {
         message.warning('Please fill all transfer fields')
         return
@@ -205,7 +209,19 @@ export default function DashboardContent (): JSX.Element {
               dataSource={role === 'Admin' ? adminAccounts : accounts}
               columns={[
                 { title: 'Account Number', dataIndex: 'accountNumber' },
-                { title: 'Type', dataIndex: 'type' },
+                {
+                  title: 'Type',
+                  dataIndex: 'type',
+                  render: (t: number | string) => {
+                    const map: Record<number, string> = {
+                      1: 'Saving',
+                      2: 'Current',
+                      3: 'Fixed'
+                    }
+                    const n = Number(t)
+                    return map[n] ?? String(t)
+                  }
+                },
                 {
                   title: 'Balance',
                   dataIndex: 'balance',
@@ -232,7 +248,7 @@ export default function DashboardContent (): JSX.Element {
           </Card>
         </Col>
       </Row>
-            {/* Deposit / Withdraw Modal */}
+      {/* Deposit / Withdraw Modal */}
       <Modal
         title='Deposit'
         open={isDepositOpen}
