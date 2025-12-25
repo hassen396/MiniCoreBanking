@@ -78,25 +78,25 @@ namespace API.Controllers
         //paginated list of accounts return 15 per page
         [Authorize(Roles = "Admin")]
         [HttpGet("list")]
-        public async Task<IActionResult> GetAccountsList([FromQuery] int page = 1, [FromQuery] int pageSize = 15)
+        public async Task<IActionResult> GetAccountsList([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 15)
         {
-            if (page <= 0 || pageSize <= 0)
+            if (pageNumber <= 0 || pageSize <= 0)
             {
                 return BadRequest("Page and pageSize must be greater than 0");
             }
 
 
-            var allAccounts = await _accountService.GetAllAccountsAsync(page, pageSize);
-            var pagedAccounts = allAccounts
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
+            var pagedAccounts = await _accountService.GetAllAccountsAsync(pageNumber, pageSize);
+            // var pagedAccounts = allAccounts
+            //     .Skip((pageNumber - 1) * pageSize)
+            //     .Take(pageSize)
+            //     .ToList();
 
             return Ok(new
             {
-                Page = page,
+                Page = pageNumber,
                 PageSize = pageSize,
-                TotalCount = allAccounts.Count,
+                TotalCount = _accountService.GetAccountsCountAsync().Result,
                 Accounts = pagedAccounts
             });
 

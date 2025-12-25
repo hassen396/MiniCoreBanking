@@ -1,4 +1,4 @@
-import React, { useEffect, useState, type JSX } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Badge,
   Button,
@@ -34,7 +34,7 @@ const Icon: React.FC<IconProps> = ({ icon, ...props }) => {
 
 const { Header, Footer, Sider } = Layout
 
-export default function DashboardPage (): JSX.Element {
+export default function DashboardPage () {
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(false)
   const [search, setSearch] = useState('')

@@ -42,7 +42,6 @@ export default function AdminDashboard (): JSX.Element {
   const [search, setSearch] = useState('')
   const [admin, setUser] = useState<any>(null)
   const [activeKey, setActiveKey] = useState<string>('/dashboard')
-
   useEffect(() => {
     const load = async () => {
       try {

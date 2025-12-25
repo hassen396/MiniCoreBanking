@@ -15,49 +15,60 @@ import {
   Table,
   Typography
 } from 'antd'
-import * as Icons from '@ant-design/icons'
-import { useEffect, useMemo, useState, type JSX } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { GetAccountsCount, getMyAccounts } from '../api/account.api'
+import { getAllAccounts, getMyAccounts } from '../api/account.api'
 import { deposit, transfer, withdraw } from '../api/transaction.api'
 import { GetRoleFromToken } from '../utils/jwt'
 import { GetUsersCount } from '../features/auth/services/auth.api'
 
-type DashboardContentProps = {
-  depositOpen?: boolean
-  onChangeDepositOpen?: (open: boolean) => void
-  withdrawOpen?: boolean
-  onChangeWithdrawOpen?: (open: boolean) => void
-}
-const role = GetRoleFromToken()
 const { Content } = Layout
-export default function DashboardContent (
-  props: DashboardContentProps
-): JSX.Element {
+const role = GetRoleFromToken()
+
+export default function DashboardContent (): JSX.Element {
   const navigate = useNavigate()
-  const [loading, setLoading] = useState<boolean>(false)
+  const [loading, setLoading] = useState(false)
+
+  const [accounts, setAccounts] = useState<any[]>([])          // user accounts
+  const [adminAccounts, setAdminAccounts] = useState<any[]>([]) // paginated admin accounts
+
+  const [usersCount, setUsersCount] = useState(0)
+  const [accountCount, setAccountCount] = useState(0)
 
   const [isDepositOpen, setDepositOpen] = useState(false)
   const [isWithdrawOpen, setWithdrawOpen] = useState(false)
   const [isTransferOpen, setTransferOpen] = useState(false)
-  const [accounts, setAccounts] = useState<Array<any>>([])
-  const [usersCount, setUsersCount] = useState(0)
-  const [accountCount, setAccountCount] = useState(0)
+
   const [form] = Form.useForm()
   const [transferForm] = Form.useForm()
+
+  const reloadUserAccounts = async () => {
+    try {
+      const myAccountsRes = await getMyAccounts()
+      setAccounts(myAccountsRes.data ?? [])
+    } catch {
+      // swallow; handled by outer load
+    }
+  }
 
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true)
-        const [accRes] = await Promise.all([getMyAccounts()])
-        if (role == 'Admin') {
-          const [usrRes] = await Promise.all([GetUsersCount()])
-          const [accCntRes] = await Promise.all([GetAccountsCount()])
-          setAccountCount(accCntRes.data)
-          setUsersCount(usrRes.data)
+
+        if (role === 'Admin') {
+          const [accountsRes, usersRes] = await Promise.all([
+            getAllAccounts(1, 5),
+            GetUsersCount()
+          ])
+
+          setAdminAccounts(accountsRes.data.accounts ?? [])
+          setAccountCount(accountsRes.data.totalCount ?? 0)
+          setUsersCount(usersRes.data ?? 0)
+        } else {
+          const myAccountsRes = await getMyAccounts()
+          setAccounts(myAccountsRes.data ?? [])
         }
-        setAccounts(accRes?.data ?? [])
       } catch (err) {
         message.error('Failed to load dashboard data')
         navigate('/login')
@@ -65,6 +76,7 @@ export default function DashboardContent (
         setLoading(false)
       }
     }
+
     load()
   }, [])
 
@@ -72,75 +84,74 @@ export default function DashboardContent (
     () => accounts.reduce((sum, a) => sum + (a.balance ?? 0), 0),
     [accounts]
   )
-  const chartData = useMemo(
-    () =>
-      accounts.map(a => ({
-        name: a.accountNumber ?? a.id,
-        value: a.balance ?? 0
-      })),
-    [accounts]
-  )
 
-  const salesChartConfig = {
+  const chartData = useMemo(() =>
+    accounts.map(a => ({
+      name: a.accountNumber,
+      value: a.balance ?? 0
+    })), [accounts])
+
+  const chartConfig = {
     data: chartData,
     xField: 'name',
-    yField: 'value',
-    color: '#1677ff'
+    yField: 'value'
   }
-
-  // Helpers to support controlled open state from parent
-  const depositOpen = props.depositOpen ?? isDepositOpen
-  const setDepositOpenSafe = (open: boolean) =>
-    props.onChangeDepositOpen
-      ? props.onChangeDepositOpen(open)
-      : setDepositOpen(open)
-
-  const withdrawOpen = props.withdrawOpen ?? isWithdrawOpen
-  const setWithdrawOpenSafe = (open: boolean) =>
-    props.onChangeWithdrawOpen
-      ? props.onChangeWithdrawOpen(open)
-      : setWithdrawOpen(open)
 
   const onDeposit = async () => {
     try {
-      const values = await form.validateFields()
-      await deposit(values.accountNumber, values.amount)
+      const { accountNumber, amount } = form.getFieldsValue()
+      if (!accountNumber || !amount) {
+        message.warning('Please provide account and amount')
+        return
+      }
+      await deposit(accountNumber, amount)
       message.success('Deposit successful')
-      setDepositOpenSafe(false)
+      setDepositOpen(false)
+      form.resetFields()
+      await reloadUserAccounts()
     } catch (err) {
-      // validation or API error
-      if ((err as any)?.errorFields) return
       message.error('Deposit failed')
     }
   }
 
   const onWithdraw = async () => {
     try {
-      const values = await form.validateFields()
-      await withdraw(values.accountNumber, values.amount)
+      const { accountNumber, amount } = form.getFieldsValue()
+      if (!accountNumber || !amount) {
+        message.warning('Please provide account and amount')
+        return
+      }
+      await withdraw(accountNumber, amount)
       message.success('Withdraw successful')
-      setWithdrawOpenSafe(false)
+      setWithdrawOpen(false)
+      form.resetFields()
+      await reloadUserAccounts()
     } catch (err) {
-      if ((err as any)?.errorFields) return
       message.error('Withdraw failed')
     }
   }
 
   const onTransfer = async () => {
     try {
-      const values = await transferForm.validateFields()
-      await transfer(
-        values.fromAccountNumber,
-        values.toAccountNumber,
-        values.amount
-      )
+      const { fromAccountNumber, toAccountNumber, amount } = transferForm.getFieldsValue()
+      if (!fromAccountNumber || !toAccountNumber || !amount) {
+        message.warning('Please fill all transfer fields')
+        return
+      }
+      if (fromAccountNumber === toAccountNumber) {
+        message.warning('From and To accounts must differ')
+        return
+      }
+      await transfer(fromAccountNumber, toAccountNumber, amount)
       message.success('Transfer successful')
       setTransferOpen(false)
+      transferForm.resetFields()
+      await reloadUserAccounts()
     } catch (err) {
-      if ((err as any)?.errorFields) return
       message.error('Transfer failed')
     }
   }
+
   return (
     <Content style={{ padding: 24 }}>
       <Breadcrumb style={{ marginBottom: 24 }}>
@@ -152,105 +163,48 @@ export default function DashboardContent (
       <Row gutter={[16, 16]}>
         <Col xs={24} md={12} xl={6}>
           <Card>
-            {role == 'Admin' ? (
-              <Row justify='space-between'>
-                <Col>
-                  <Typography.Text type='secondary'>
-                    Total Users
-                  </Typography.Text>
-                  <Typography.Title level={3} style={{ margin: 0 }}>
-                    {usersCount}
-                  </Typography.Title>
-                </Col>
-                <Icons.UserOutlined style={{ fontSize: 48 }} />
-              </Row>
-            ) : (
-              <Row justify='space-between'>
-                <Col>
-                  <Typography.Text type='secondary'>
-                    Total Balance
-                  </Typography.Text>
-                  <Typography.Title level={3} style={{ margin: 0 }}>
-                    {new Intl.NumberFormat(undefined, {
-                      style: 'currency',
-                      currency: 'ETB'
-                    }).format(totalBalance)}
-                  </Typography.Title>
-                </Col>
-                <Icons.MoneyCollectTwoTone style={{ fontSize: 48 }} />
-              </Row>
-            )}
-          </Card>
-        </Col>
-        <Col xs={24} md={12} xl={6}>
-          <Card>
-            {role == 'Admin' ? (
-              <Row justify='space-between'>
-                <Col>
-                  <Typography.Text type='secondary'>
-                    Total Accounts
-                  </Typography.Text>
-                  <Typography.Title level={3} style={{ margin: 0 }}>
-                    {accountCount}
-                  </Typography.Title>
-                </Col>
-                <Icons.BankTwoTone style={{ fontSize: 48 }} />
-              </Row>
-            ) : (
-              <Row justify='space-between'>
-                <Col>
-                  <Typography.Text type='secondary'>Accounts</Typography.Text>
-                  <Typography.Title level={3} style={{ margin: 0 }}>
-                    {accounts.length}
-                  </Typography.Title>
-                </Col>
-                <Icons.BankTwoTone style={{ fontSize: 48 }} />
-              </Row>
-            )}
-          </Card>
-        </Col>
-        <Col xs={24} md={12} xl={6}>
-          <Card>
-            <Row justify='space-between'>
-              <Col>
-                <Button type='primary' onClick={() => setDepositOpenSafe(true)}>
-                  Deposit
-                </Button>
-              </Col>
-              <Icons.ArrowDownOutlined style={{ fontSize: 32 }} />
-            </Row>
-          </Card>
-        </Col>
-        <Col xs={24} md={12} xl={6}>
-          <Card>
-            <Row justify='space-between'>
-              <Col>
-                <Button onClick={() => setWithdrawOpenSafe(true)}>
-                  Withdraw
-                </Button>
-              </Col>
-              <Icons.ArrowUpOutlined style={{ fontSize: 32 }} />
-            </Row>
+            <Typography.Text type='secondary'>
+              {role === 'Admin' ? 'Total Users' : 'Total Balance'}
+            </Typography.Text>
+            <Typography.Title level={3} style={{ margin: 0 }}>
+              {role === 'Admin'
+                ? usersCount
+                : new Intl.NumberFormat(undefined, {
+                    style: 'currency',
+                    currency: 'ETB'
+                  }).format(totalBalance)}
+            </Typography.Title>
           </Card>
         </Col>
 
-        {/* BAR CHART */}
-        <Col xs={24} xl={14}>
-          <Card title='Balances by Account'>
-            <Bar {...salesChartConfig} height={300} />
+        <Col xs={24} md={12} xl={6}>
+          <Card>
+            <Typography.Text type='secondary'>Total Accounts</Typography.Text>
+            <Typography.Title level={3} style={{ margin: 0 }}>
+              {role === 'Admin' ? accountCount : accounts.length}
+            </Typography.Title>
           </Card>
         </Col>
+      </Row>
 
-        {/* TABLE */}
-        <Col xs={24} xl={10}>
-          <Card title='My Accounts'>
+      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+        {role !== 'Admin' && (
+          <Col xs={24} xl={14}>
+            <Card title='Balances by Account'>
+              <Bar {...chartConfig} height={300} />
+            </Card>
+          </Col>
+        )}
+
+        <Col xs={24} xl={role === 'Admin' ? 24 : 10}>
+          <Card title={role === 'Admin' ? 'All Accounts' : 'My Accounts'}>
             <Table
               loading={loading}
+              rowKey='id'
               pagination={false}
-              rowKey={r => r.id}
-              dataSource={accounts}
+              dataSource={role === 'Admin' ? adminAccounts : accounts}
               columns={[
-                { title: 'Account', dataIndex: 'accountNumber' },
+                { title: 'Account Number', dataIndex: 'accountNumber' },
                 { title: 'Type', dataIndex: 'type' },
                 {
                   title: 'Balance',
@@ -258,32 +212,32 @@ export default function DashboardContent (
                   render: (v: number) =>
                     new Intl.NumberFormat(undefined, {
                       style: 'currency',
-                      currency: 'USD'
+                      currency: 'ETB'
                     }).format(v ?? 0)
                 }
               ]}
             />
-            <Space style={{ marginTop: 16 }}>
-              <Button type='primary' onClick={() => setDepositOpenSafe(true)}>
-                Deposit
-              </Button>
-              <Button onClick={() => setWithdrawOpenSafe(true)}>
-                Withdraw
-              </Button>
-              <Button type='dashed' onClick={() => setTransferOpen(true)}>
-                Transfer
-              </Button>
-            </Space>
+
+            {role !== 'Admin' && (
+              <Space style={{ marginTop: 16 }}>
+                <Button type='primary' onClick={() => setDepositOpen(true)}>
+                  Deposit
+                </Button>
+                <Button onClick={() => setWithdrawOpen(true)}>Withdraw</Button>
+                <Button type='dashed' onClick={() => setTransferOpen(true)}>
+                  Transfer to own
+                </Button>
+              </Space>
+            )}
           </Card>
         </Col>
       </Row>
-
-      {/* Deposit / Withdraw Modal */}
+            {/* Deposit / Withdraw Modal */}
       <Modal
         title='Deposit'
-        open={depositOpen}
+        open={isDepositOpen}
         onOk={onDeposit}
-        onCancel={() => setDepositOpenSafe(false)}
+        onCancel={() => setDepositOpen(false)}
       >
         <Form form={form} layout='vertical'>
           <Form.Item
@@ -310,9 +264,9 @@ export default function DashboardContent (
 
       <Modal
         title='Withdraw'
-        open={withdrawOpen}
+        open={isWithdrawOpen}
         onOk={onWithdraw}
-        onCancel={() => setWithdrawOpenSafe(false)}
+        onCancel={() => setWithdrawOpen(false)}
       >
         <Form form={form} layout='vertical'>
           <Form.Item
@@ -378,6 +332,11 @@ export default function DashboardContent (
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* MODALS (unchanged logic) */}
+      {/* <Modal title='Deposit' open={isDepositOpen} onOk={() => {}} onCancel={() => setDepositOpen(false)} />
+      <Modal title='Withdraw' open={isWithdrawOpen} onOk={() => {}} onCancel={() => setWithdrawOpen(false)} />
+      <Modal title='Transfer' open={isTransferOpen} onOk={() => {}} onCancel={() => setTransferOpen(false)} /> */}
     </Content>
   )
 }

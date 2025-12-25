@@ -31,14 +31,19 @@ const Transfer: React.FC = () => {
   const [form] = Form.useForm()
   const variant = Form.useWatch('variant', form)
   const onFinish = async (values: TransferType) => {
-
+var result;
     try {
-      await transfer(values.fromAccountNumber, values.toAccountNumber, values.amount, values.remarks);
+       result = await transfer(values.fromAccountNumber, values.toAccountNumber, values.amount, values.remarks);
       message.success("Transfer successful!");
       form.resetFields();
     }
-    catch(e){
-      message.error("Transfer failed: " + e);
+    catch (e: unknown) {
+      const msg =
+        e && typeof e === 'object' && 'message' in e
+          ? String((e as any).message)
+          : 'Unexpected error'
+      const apiMsg = result?.data?.message ? String(result.data.message) : ''
+      message.error(`Transfer failed: ${[apiMsg, msg].filter(Boolean).join(' ')}`)
     }
   }
       return (
