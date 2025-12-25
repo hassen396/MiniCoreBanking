@@ -21,6 +21,7 @@ import DashboardContent from '../../components/DashboardContent'
 import ProfilePage from '../../features/accounts/pages/ProfilePage'
 import CreateAccount from '../Account/CreateAccount'
 import Transfer from '../Account/Transfer'
+import CreateUser from '../User/CreateUser'
 
 type IconProps = {
   icon: keyof typeof Icons | string
@@ -86,8 +87,13 @@ export default function AdminDashboard (): JSX.Element {
             { key: '/profile', icon: <Icons.UserOutlined />, label: 'Profile' },
             {
               key: '/create-account',
-              icon: <Icons.PlusCircleTwoTone />,
+              icon: <Icons.PlusCircleOutlined />,
               label: 'Create Account'
+            },
+            {
+              key: '/create-user',
+              icon: <Icons.UserAddOutlined />,
+              label: 'Create User'
             },
             {
               key: '/transfer',
@@ -140,7 +146,8 @@ export default function AdminDashboard (): JSX.Element {
                         '/dashboard': 'Dashboard',
                         '/profile': 'Profile',
                         '/create-account': 'Create Account',
-                        '/transfer': 'Transfer'
+                        '/transfer': 'Transfer',
+                        '/create-user': 'Create User'
                       } as Record<string, string>
                     )[activeKey] ?? 'Dashboard'}
                   </Breadcrumb.Item>
@@ -185,9 +192,11 @@ export default function AdminDashboard (): JSX.Element {
         {activeKey === '/profile' && <ProfilePage />}
         {activeKey === '/create-account' && <CreateAccount />}
         {activeKey === '/transfer' && <Transfer />}
-        {activeKey !== '/profile' && activeKey !== '/create-account'  && activeKey !== '/transfer' && (
-          <DashboardContent />
-        )}
+        {activeKey === '/create-user' && <CreateUser />}
+        {activeKey !== '/profile' &&
+          activeKey !== '/create-account' &&
+          activeKey !== '/transfer' &&
+          activeKey !== '/create-user' && <DashboardContent />}
         {/* FOOTER */}
         <Footer style={{ textAlign: 'center' }}>
           © MiniCoreBanking Dashboard

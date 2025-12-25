@@ -67,5 +67,39 @@ namespace API.Controllers
             var balance = await _accountService.GetBalanceAsync(accountId);
             return Ok(balance);
         }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("get-accounts-count")]
+        public async Task<ActionResult> GetAccountsCount()
+        {
+            var count = await _accountService.GetAccountsCountAsync();
+            return Ok(count);
+        }
+        //paginated list of accounts return 15 per page
+        [Authorize(Roles = "Admin")]
+        [HttpGet("list")]
+        public async Task<IActionResult> GetAccountsList([FromQuery] int page = 1, [FromQuery] int pageSize = 15)
+        {
+            if (page <= 0 || pageSize <= 0)
+            {
+                return BadRequest("Page and pageSize must be greater than 0");
+            }
+
+
+            var allAccounts = await _accountService.GetAllAccountsAsync(page, pageSize);
+            var pagedAccounts = allAccounts
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return Ok(new
+            {
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = allAccounts.Count,
+                Accounts = pagedAccounts
+            });
+
+        }
     }
 }

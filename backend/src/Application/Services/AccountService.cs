@@ -50,5 +50,14 @@ namespace Application.Services
                 Balance = account.Balance
             };
         }
+
+        public async Task<int> GetAccountsCountAsync()
+        {
+            return await _repository.GetAccountsCountAsync();
+        }
+        public async Task<List<Account>> GetAllAccountsAsync(int pageNumber, int pageSize)
+        {
+            return await _repository.GetAllAccountsAsync(pageNumber, pageSize);
+        }
     }
 }

@@ -1,19 +1,21 @@
-import axios from 'axios'
+import { api } from "../services/api"
 
-const API_URL = 'https://localhost:5001/api'
+
+
+
 
 const authHeader = () => ({
   Authorization: `Bearer ${localStorage.getItem('accessToken')}`
 })
 
 export const getMyAccounts = () => {
-  return axios.get(`${API_URL}/accounts/mine`, {
+  return api.get(`/accounts/mine`, {
     headers: authHeader()
   })
 }
 
 export const getAccountBalance = (accountId: string) => {
-  return axios.get(`${API_URL}/accounts/${accountId}/balance`, {
+  return api.get(`/accounts/${accountId}/balance`, {
     headers: authHeader()
   })
 }
@@ -24,7 +26,15 @@ export type CreateAccountRequest = {
 }
 
 export const createAccount = (data: CreateAccountRequest) => {
-  return axios.post(`${API_URL}/accounts/create`, data, {
+  return api.post(`/accounts/create`, data, {
     headers: authHeader()
   })
+}
+export const GetAccountsCount= ()=>
+{
+  return api.get(`/accounts/get-accounts-count`,
+    {
+    headers: authHeader()
+  }
+  );
 }

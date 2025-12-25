@@ -14,12 +14,14 @@ import {
   Space,
   Table,
   Typography
-} from 'antd';
-import * as Icons from '@ant-design/icons';
-import { useEffect, useMemo, useState, type JSX } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getMyAccounts } from '../api/account.api';
-import { deposit, transfer, withdraw } from '../api/transaction.api';
+} from 'antd'
+import * as Icons from '@ant-design/icons'
+import { useEffect, useMemo, useState, type JSX } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { GetAccountsCount, getMyAccounts } from '../api/account.api'
+import { deposit, transfer, withdraw } from '../api/transaction.api'
+import { GetRoleFromToken } from '../utils/jwt'
+import { GetUsersCount } from '../features/auth/services/auth.api'
 
 type DashboardContentProps = {
   depositOpen?: boolean
@@ -27,9 +29,11 @@ type DashboardContentProps = {
   withdrawOpen?: boolean
   onChangeWithdrawOpen?: (open: boolean) => void
 }
-
+const role = GetRoleFromToken()
 const { Content } = Layout
-export default function DashboardContent (props: DashboardContentProps): JSX.Element {
+export default function DashboardContent (
+  props: DashboardContentProps
+): JSX.Element {
   const navigate = useNavigate()
   const [loading, setLoading] = useState<boolean>(false)
 
@@ -37,16 +41,22 @@ export default function DashboardContent (props: DashboardContentProps): JSX.Ele
   const [isWithdrawOpen, setWithdrawOpen] = useState(false)
   const [isTransferOpen, setTransferOpen] = useState(false)
   const [accounts, setAccounts] = useState<Array<any>>([])
-  
-const [form] = Form.useForm()
+  const [usersCount, setUsersCount] = useState(0)
+  const [accountCount, setAccountCount] = useState(0)
+  const [form] = Form.useForm()
   const [transferForm] = Form.useForm()
-  
+
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true)
         const [accRes] = await Promise.all([getMyAccounts()])
-
+        if (role == 'Admin') {
+          const [usrRes] = await Promise.all([GetUsersCount()])
+          const [accCntRes] = await Promise.all([GetAccountsCount()])
+          setAccountCount(accCntRes.data)
+          setUsersCount(usrRes.data)
+        }
         setAccounts(accRes?.data ?? [])
       } catch (err) {
         message.error('Failed to load dashboard data')
@@ -73,19 +83,23 @@ const [form] = Form.useForm()
 
   const salesChartConfig = {
     data: chartData,
-    xField: 'value',
-    yField: 'name',
+    xField: 'name',
+    yField: 'value',
     color: '#1677ff'
   }
 
   // Helpers to support controlled open state from parent
   const depositOpen = props.depositOpen ?? isDepositOpen
   const setDepositOpenSafe = (open: boolean) =>
-    props.onChangeDepositOpen ? props.onChangeDepositOpen(open) : setDepositOpen(open)
+    props.onChangeDepositOpen
+      ? props.onChangeDepositOpen(open)
+      : setDepositOpen(open)
 
   const withdrawOpen = props.withdrawOpen ?? isWithdrawOpen
   const setWithdrawOpenSafe = (open: boolean) =>
-    props.onChangeWithdrawOpen ? props.onChangeWithdrawOpen(open) : setWithdrawOpen(open)
+    props.onChangeWithdrawOpen
+      ? props.onChangeWithdrawOpen(open)
+      : setWithdrawOpen(open)
 
   const onDeposit = async () => {
     try {
@@ -115,7 +129,11 @@ const [form] = Form.useForm()
   const onTransfer = async () => {
     try {
       const values = await transferForm.validateFields()
-      await transfer(values.fromAccountNumber, values.toAccountNumber, values.amount)
+      await transfer(
+        values.fromAccountNumber,
+        values.toAccountNumber,
+        values.amount
+      )
       message.success('Transfer successful')
       setTransferOpen(false)
     } catch (err) {
@@ -134,40 +152,67 @@ const [form] = Form.useForm()
       <Row gutter={[16, 16]}>
         <Col xs={24} md={12} xl={6}>
           <Card>
-            <Row justify='space-between'>
-              <Col>
-                <Typography.Text type='secondary'>
-                  Total Balance
-                </Typography.Text>
-                <Typography.Title level={3} style={{ margin: 0 }}>
-                  {new Intl.NumberFormat(undefined, {
-                    style: 'currency',
-                    currency: 'USD'
-                  }).format(totalBalance)}
-                </Typography.Title>
-              </Col>
-              <Icons.DollarCircleTwoTone style={{ fontSize: 48 }} />
-            </Row>
+            {role == 'Admin' ? (
+              <Row justify='space-between'>
+                <Col>
+                  <Typography.Text type='secondary'>
+                    Total Users
+                  </Typography.Text>
+                  <Typography.Title level={3} style={{ margin: 0 }}>
+                    {usersCount}
+                  </Typography.Title>
+                </Col>
+                <Icons.UserOutlined style={{ fontSize: 48 }} />
+              </Row>
+            ) : (
+              <Row justify='space-between'>
+                <Col>
+                  <Typography.Text type='secondary'>
+                    Total Balance
+                  </Typography.Text>
+                  <Typography.Title level={3} style={{ margin: 0 }}>
+                    {new Intl.NumberFormat(undefined, {
+                      style: 'currency',
+                      currency: 'ETB'
+                    }).format(totalBalance)}
+                  </Typography.Title>
+                </Col>
+                <Icons.MoneyCollectTwoTone style={{ fontSize: 48 }} />
+              </Row>
+            )}
+          </Card>
+        </Col>
+        <Col xs={24} md={12} xl={6}>
+          <Card>
+            {role == 'Admin' ? (
+              <Row justify='space-between'>
+                <Col>
+                  <Typography.Text type='secondary'>
+                    Total Accounts
+                  </Typography.Text>
+                  <Typography.Title level={3} style={{ margin: 0 }}>
+                    {accountCount}
+                  </Typography.Title>
+                </Col>
+                <Icons.BankTwoTone style={{ fontSize: 48 }} />
+              </Row>
+            ) : (
+              <Row justify='space-between'>
+                <Col>
+                  <Typography.Text type='secondary'>Accounts</Typography.Text>
+                  <Typography.Title level={3} style={{ margin: 0 }}>
+                    {accounts.length}
+                  </Typography.Title>
+                </Col>
+                <Icons.BankTwoTone style={{ fontSize: 48 }} />
+              </Row>
+            )}
           </Card>
         </Col>
         <Col xs={24} md={12} xl={6}>
           <Card>
             <Row justify='space-between'>
               <Col>
-                <Typography.Text type='secondary'>Accounts</Typography.Text>
-                <Typography.Title level={3} style={{ margin: 0 }}>
-                  {accounts.length}
-                </Typography.Title>
-              </Col>
-              <Icons.BankTwoTone style={{ fontSize: 48 }} />
-            </Row>
-          </Card>
-        </Col>
-        <Col xs={24} md={12} xl={6}>
-          <Card>
-            <Row justify='space-between'>
-              <Col>
-
                 <Button type='primary' onClick={() => setDepositOpenSafe(true)}>
                   Deposit
                 </Button>
@@ -180,8 +225,9 @@ const [form] = Form.useForm()
           <Card>
             <Row justify='space-between'>
               <Col>
-
-                <Button onClick={() => setWithdrawOpenSafe(true)}>Withdraw</Button>
+                <Button onClick={() => setWithdrawOpenSafe(true)}>
+                  Withdraw
+                </Button>
               </Col>
               <Icons.ArrowUpOutlined style={{ fontSize: 32 }} />
             </Row>
@@ -221,7 +267,9 @@ const [form] = Form.useForm()
               <Button type='primary' onClick={() => setDepositOpenSafe(true)}>
                 Deposit
               </Button>
-              <Button onClick={() => setWithdrawOpenSafe(true)}>Withdraw</Button>
+              <Button onClick={() => setWithdrawOpenSafe(true)}>
+                Withdraw
+              </Button>
               <Button type='dashed' onClick={() => setTransferOpen(true)}>
                 Transfer
               </Button>
@@ -230,8 +278,7 @@ const [form] = Form.useForm()
         </Col>
       </Row>
 
-      {/* Deposit / Withdraw Modal */
-      }
+      {/* Deposit / Withdraw Modal */}
       <Modal
         title='Deposit'
         open={depositOpen}
@@ -274,12 +321,10 @@ const [form] = Form.useForm()
             rules={[{ required: true }]}
           >
             <Select
-            
               options={accounts.map((a: any) => ({
                 value: a.accountNumber,
                 label: a.accountNumber
-              }))
-            }
+              }))}
             />
           </Form.Item>
           <Form.Item
@@ -312,7 +357,11 @@ const [form] = Form.useForm()
               }))}
             />
           </Form.Item>
-          <Form.Item name='toAccountNumber' label='To' rules={[{ required: true }]}>
+          <Form.Item
+            name='toAccountNumber'
+            label='To'
+            rules={[{ required: true }]}
+          >
             <Select
               options={accounts.map((a: any) => ({
                 value: a.accountNumber,

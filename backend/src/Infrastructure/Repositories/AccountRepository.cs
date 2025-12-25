@@ -17,6 +17,13 @@ namespace Infrastructure.Repositories
             await _context.SaveChangesAsync();
             return account;
         }
+
+        public async Task<int> GetAccountsCountAsync()
+        {
+            var count = await _context.Accounts.CountAsync();
+            return count;
+        }
+
         public async Task<Account?> GetByIdAsync(Guid id)
         {
             return await _context.Accounts.FindAsync(id);
@@ -48,6 +55,17 @@ namespace Infrastructure.Repositories
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
+        }
+        public async Task<List<Account>> GetAllAccountsAsync(int pageNumber = 1, int pageSize = 15)
+        {
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 15;
+
+            return await _context.Accounts
+                .OrderBy(a => a.AccountNumber)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
         }
     }
 }

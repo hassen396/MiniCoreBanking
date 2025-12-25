@@ -20,7 +20,7 @@ public class AuthController : ControllerBase
         _tokenService = tokenService;
     }
     [Authorize(Roles ="Admin")]
-    [HttpPost("register")]
+    [HttpPost("create-user")]
     public async Task<IActionResult> Register([FromBody] AuthDtos.RegisterRequest request)
     {
         var user = new ApplicationUser
@@ -169,5 +169,13 @@ public class AuthController : ControllerBase
     public IActionResult UserOnly()
     {
         return Ok("you are a user");
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("get-user-cont")]
+    public IActionResult GetUsersCount()
+    {
+        var count = _userManager.Users.Count();
+        return Ok(count);
     }
 }
