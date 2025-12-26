@@ -42,6 +42,7 @@ export default function AdminDashboard (): JSX.Element {
   const [search, setSearch] = useState('')
   const [admin, setUser] = useState<any>(null)
   const [activeKey, setActiveKey] = useState<string>('/dashboard')
+  const [depositOpen, setDepositOpen] = useState<boolean>(false)
   useEffect(() => {
     const load = async () => {
       try {
@@ -76,7 +77,15 @@ export default function AdminDashboard (): JSX.Element {
           theme='light'
           mode='inline'
           selectedKeys={[activeKey]}
-          onClick={({ key }) => setActiveKey(String(key))}
+          onClick={({ key }) => {
+            const k = String(key)
+            if (k === '/deposit') {
+              setActiveKey('/dashboard')
+              setDepositOpen(true)
+              return
+            }
+            setActiveKey(k)
+          }}
           items={[
             {
               key: '/dashboard',
@@ -98,6 +107,11 @@ export default function AdminDashboard (): JSX.Element {
               key: '/transfer',
               icon: <Icons.TransactionOutlined />,
               label: 'Transfer'
+            },
+            {
+              key: '/deposit',
+              icon: <Icons.ArrowDownOutlined />,
+              label: 'Deposit'
             }
           ]}
         />
@@ -195,7 +209,12 @@ export default function AdminDashboard (): JSX.Element {
         {activeKey !== '/profile' &&
           activeKey !== '/create-account' &&
           activeKey !== '/transfer' &&
-          activeKey !== '/create-user' && <DashboardContent />}
+          activeKey !== '/create-user' && (
+            <DashboardContent
+              depositOpen={depositOpen}
+              onChangeDepositOpen={setDepositOpen}
+            />
+          )}
         {/* FOOTER */}
         <Footer style={{ textAlign: 'center' }}>
           © MiniCoreBanking Dashboard

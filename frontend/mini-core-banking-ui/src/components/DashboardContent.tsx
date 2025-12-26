@@ -5,6 +5,7 @@ import {
   Card,
   Col,
   Form,
+  Input,
   InputNumber,
   Layout,
   message,
@@ -78,6 +79,16 @@ export default function DashboardContent ({
     }
   }
 
+  const reloadAdminAccounts = async () => {
+    try {
+      const accountsRes = await getAllAccounts(adminPageNumber, adminPageSize)
+      setAdminAccounts(accountsRes.data.accounts ?? [])
+      setAccountCount(accountsRes.data.totalCount ?? 0)
+    } catch {
+      // swallow; handled by outer load
+    }
+  }
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -138,7 +149,8 @@ export default function DashboardContent ({
       message.success('Deposit successful')
       setDepositOpen(false)
       form.resetFields()
-      await reloadUserAccounts()
+      if (role === 'Admin') await reloadAdminAccounts()
+      else await reloadUserAccounts()
     } catch (err) {
       message.error('Deposit failed')
     }
@@ -155,7 +167,8 @@ export default function DashboardContent ({
       message.success('Withdraw successful')
       setWithdrawOpen(false)
       form.resetFields()
-      await reloadUserAccounts()
+      if (role === 'Admin') await reloadAdminAccounts()
+      else await reloadUserAccounts()
     } catch (err) {
       message.error('Withdraw failed')
     }
@@ -303,12 +316,7 @@ export default function DashboardContent ({
             label='Account'
             rules={[{ required: true }]}
           >
-            <Select
-              options={accounts.map((a: any) => ({
-                value: a.accountNumber,
-                label: a.accountNumber
-              }))}
-            />
+            <Input placeholder='Enter account number' />
           </Form.Item>
           <Form.Item
             name='amount'
@@ -332,12 +340,7 @@ export default function DashboardContent ({
             label='Account Number'
             rules={[{ required: true }]}
           >
-            <Select
-              options={accounts.map((a: any) => ({
-                value: a.accountNumber,
-                label: a.accountNumber
-              }))}
-            />
+            <Input placeholder='Enter account number' />
           </Form.Item>
           <Form.Item
             name='amount'
