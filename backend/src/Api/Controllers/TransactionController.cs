@@ -32,6 +32,7 @@ namespace API.Controllers
         }
 
         [HttpPost("transfer")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Transfer([FromBody] TransferDto dto)
         {
             await _transactionService.TransferAsync(dto.FromAccountNumber, dto.ToAccountNumber, dto.Amount);

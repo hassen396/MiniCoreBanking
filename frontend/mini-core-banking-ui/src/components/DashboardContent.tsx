@@ -25,7 +25,19 @@ import { GetUsersCount } from '../features/auth/services/auth.api'
 const { Content } = Layout
 const role = GetRoleFromToken()
 
-export default function DashboardContent (): JSX.Element {
+type DashboardContentProps = {
+  depositOpen?: boolean
+  onChangeDepositOpen?: (open: boolean) => void
+  withdrawOpen?: boolean
+  onChangeWithdrawOpen?: (open: boolean) => void
+}
+
+export default function DashboardContent ({
+  depositOpen,
+  onChangeDepositOpen,
+  withdrawOpen,
+  onChangeWithdrawOpen
+}: DashboardContentProps) {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
 
@@ -35,8 +47,23 @@ export default function DashboardContent (): JSX.Element {
   const [usersCount, setUsersCount] = useState(0)
   const [accountCount, setAccountCount] = useState(0)
 
-  const [isDepositOpen, setDepositOpen] = useState(false)
-  const [isWithdrawOpen, setWithdrawOpen] = useState(false)
+  // Admin pagination state
+  const [adminPageNumber, setAdminPageNumber] = useState(1)
+  const [adminPageSize, setAdminPageSize] = useState(5)
+
+  // Support both controlled (via props) and uncontrolled usage for modals
+  const [internalDepositOpen, setInternalDepositOpen] = useState(false)
+  const [internalWithdrawOpen, setInternalWithdrawOpen] = useState(false)
+  const isDepositOpen = depositOpen ?? internalDepositOpen
+  const isWithdrawOpen = withdrawOpen ?? internalWithdrawOpen
+  const setDepositOpen = (open: boolean) => {
+    if (onChangeDepositOpen) onChangeDepositOpen(open)
+    else setInternalDepositOpen(open)
+  }
+  const setWithdrawOpen = (open: boolean) => {
+    if (onChangeWithdrawOpen) onChangeWithdrawOpen(open)
+    else setInternalWithdrawOpen(open)
+  }
   const [isTransferOpen, setTransferOpen] = useState(false)
 
   const [form] = Form.useForm()
@@ -58,7 +85,7 @@ export default function DashboardContent (): JSX.Element {
 
         if (role === 'Admin') {
           const [accountsRes, usersRes] = await Promise.all([
-            getAllAccounts(1, 5),
+            getAllAccounts(adminPageNumber, adminPageSize),
             GetUsersCount()
           ])
 
@@ -78,7 +105,7 @@ export default function DashboardContent (): JSX.Element {
     }
 
     load()
-  }, [])
+  }, [adminPageNumber, adminPageSize])
 
   const totalBalance = useMemo(
     () => accounts.reduce((sum, a) => sum + (a.balance ?? 0), 0),
@@ -205,7 +232,16 @@ export default function DashboardContent (): JSX.Element {
             <Table
               loading={loading}
               rowKey='id'
-              pagination={false}
+              pagination={
+                role === 'Admin'
+                  ? {
+                      current: adminPageNumber,
+                      pageSize: adminPageSize,
+                      total: accountCount,
+                      showSizeChanger: true
+                    }
+                  : false
+              }
               dataSource={role === 'Admin' ? adminAccounts : accounts}
               columns={[
                 { title: 'Account Number', dataIndex: 'accountNumber' },
@@ -232,6 +268,12 @@ export default function DashboardContent (): JSX.Element {
                     }).format(v ?? 0)
                 }
               ]}
+              onChange={(pagination: any) => {
+                if (role !== 'Admin') return
+                const { current, pageSize } = pagination || {}
+                if (typeof current === 'number') setAdminPageNumber(current)
+                if (typeof pageSize === 'number') setAdminPageSize(pageSize)
+              }}
             />
 
             {role !== 'Admin' && (
