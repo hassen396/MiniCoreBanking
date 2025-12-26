@@ -43,6 +43,7 @@ export default function AdminDashboard (): JSX.Element {
   const [admin, setUser] = useState<any>(null)
   const [activeKey, setActiveKey] = useState<string>('/dashboard')
   const [depositOpen, setDepositOpen] = useState<boolean>(false)
+  const [withdrawOpen, setWithdrawOpen] = useState<boolean>(false)
   useEffect(() => {
     const load = async () => {
       try {
@@ -84,6 +85,11 @@ export default function AdminDashboard (): JSX.Element {
               setDepositOpen(true)
               return
             }
+            if (k === '/withdraw') {
+              setActiveKey('/dashboard')
+              setWithdrawOpen(true)
+              return
+            }
             setActiveKey(k)
           }}
           items={[
@@ -112,6 +118,11 @@ export default function AdminDashboard (): JSX.Element {
               key: '/deposit',
               icon: <Icons.ArrowDownOutlined />,
               label: 'Deposit'
+            },
+            {
+              key: '/withdraw',
+              icon: <Icons.ArrowUpOutlined />,
+              label: 'Withdraw'
             }
           ]}
         />
@@ -213,6 +224,8 @@ export default function AdminDashboard (): JSX.Element {
             <DashboardContent
               depositOpen={depositOpen}
               onChangeDepositOpen={setDepositOpen}
+              withdrawOpen={withdrawOpen}
+              onChangeWithdrawOpen={setWithdrawOpen}
             />
           )}
         {/* FOOTER */}

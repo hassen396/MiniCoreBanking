@@ -65,8 +65,8 @@ namespace Application.Services
 
         public async Task TransferAsync(string fromAccountNumber, string toAccountNumber, decimal amount)
         {
-        if(fromAccountNumber == toAccountNumber)
-         throw new Exception("Cannot transfer to the same account");      
+            if (fromAccountNumber == toAccountNumber)
+                throw new Exception("Cannot transfer to the same account");
             if (amount <= 0)
                 throw new Exception("Invalid amount");
 
@@ -98,6 +98,20 @@ namespace Application.Services
 
             await _accountRepo.SaveChangesAsync();
             await _transactionRepo.SaveChangesAsync();
+        }
+
+        public async Task<(IReadOnlyList<Transaction> Items, int TotalCount)> GetTransactionsAsync(string accountNumber, int pageNumber, int pageSize)
+        {
+            if (string.IsNullOrWhiteSpace(accountNumber))
+                throw new Exception("Account number is required");
+
+            if (pageNumber <= 0 || pageSize <= 0)
+                throw new Exception("Invalid pagination parameters");
+
+            var skip = (pageNumber - 1) * pageSize;
+            var items = await _transactionRepo.GetByAccountNumberAsync(accountNumber, skip, pageSize);
+            var total = await _transactionRepo.CountByAccountNumberAsync(accountNumber);
+            return (items, total);
         }
     }
 }

@@ -35,3 +35,14 @@ export const transfer = (
     { headers: authHeader() }
   )
 }
+
+export const getTransactionsByAccount = (
+  accountNumber: string,
+  pageNumber: number,
+  pageSize: number
+) => {
+  return axios.get(`${API_URL}/transactions/${accountNumber}/transactions`, {
+    params: { pageNumber, pageSize },
+    headers: authHeader()
+  })
+}

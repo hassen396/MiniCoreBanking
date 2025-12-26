@@ -10,6 +10,7 @@ import {
   Layout,
   message,
   Modal,
+  Drawer,
   Row,
   Select,
   Space,
@@ -19,7 +20,12 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getAllAccounts, getMyAccounts } from '../api/account.api'
-import { deposit, transfer, withdraw } from '../api/transaction.api'
+import {
+  deposit,
+  transfer,
+  withdraw,
+  getTransactionsByAccount
+} from '../api/transaction.api'
 import { GetRoleFromToken } from '../utils/jwt'
 import { GetUsersCount } from '../features/auth/services/auth.api'
 
@@ -51,6 +57,17 @@ export default function DashboardContent ({
   // Admin pagination state
   const [adminPageNumber, setAdminPageNumber] = useState(1)
   const [adminPageSize, setAdminPageSize] = useState(5)
+
+  // Admin transaction viewing state
+  const [selectedAccountNumber, setSelectedAccountNumber] = useState<
+    string | null
+  >(null)
+  const [transactions, setTransactions] = useState<any[]>([])
+  const [txTotal, setTxTotal] = useState(0)
+  const [txPage, setTxPage] = useState(1)
+  const [txPageSize, setTxPageSize] = useState(10)
+  const [txLoading, setTxLoading] = useState(false)
+  const [txDrawerOpen, setTxDrawerOpen] = useState(false)
 
   // Support both controlled (via props) and uncontrolled usage for modals
   const [internalDepositOpen, setInternalDepositOpen] = useState(false)
@@ -89,6 +106,28 @@ export default function DashboardContent ({
     }
   }
 
+  const loadTransactions = async (
+    accountNumber: string,
+    pageNumber = txPage,
+    pageSize = txPageSize
+  ) => {
+    if (role !== 'Admin') return
+    try {
+      setTxLoading(true)
+      const res = await getTransactionsByAccount(
+        accountNumber,
+        pageNumber,
+        pageSize
+      )
+      setTransactions(res.data?.items ?? [])
+      setTxTotal(res.data?.totalCount ?? 0)
+    } catch {
+      message.error('Failed to load transactions')
+    } finally {
+      setTxLoading(false)
+    }
+  }
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -117,6 +156,12 @@ export default function DashboardContent ({
 
     load()
   }, [adminPageNumber, adminPageSize])
+
+  useEffect(() => {
+    if (role !== 'Admin') return
+    if (!selectedAccountNumber) return
+    loadTransactions(selectedAccountNumber, txPage, txPageSize)
+  }, [selectedAccountNumber, txPage, txPageSize])
 
   const totalBalance = useMemo(
     () => accounts.reduce((sum, a) => sum + (a.balance ?? 0), 0),
@@ -287,6 +332,20 @@ export default function DashboardContent ({
                 if (typeof current === 'number') setAdminPageNumber(current)
                 if (typeof pageSize === 'number') setAdminPageSize(pageSize)
               }}
+              onRow={(record: any) =>
+                role === 'Admin'
+                  ? {
+                      onClick: () => {
+                        const accountNumber = record?.accountNumber
+                        if (!accountNumber) return
+                        setSelectedAccountNumber(accountNumber)
+                        setTxPage(1)
+                        setTxDrawerOpen(true)
+                        loadTransactions(accountNumber, 1, txPageSize)
+                      }
+                    }
+                  : {}
+              }
             />
 
             {role !== 'Admin' && (
@@ -340,7 +399,16 @@ export default function DashboardContent ({
             label='Account Number'
             rules={[{ required: true }]}
           >
-            <Input placeholder='Enter account number' />
+            {role === 'Admin' ? (
+              <Input placeholder='Enter account number' />
+            ) : (
+              <Select
+                options={accounts.map((a: any) => ({
+                  value: a.accountNumber,
+                  label: a.accountNumber
+                }))}
+              />
+            )}
           </Form.Item>
           <Form.Item
             name='amount'
@@ -393,6 +461,58 @@ export default function DashboardContent ({
           </Form.Item>
         </Form>
       </Modal>
+
+      <Drawer
+        title={`Transactions${
+          selectedAccountNumber ? ` - ${selectedAccountNumber}` : ''
+        }`}
+        placement='right'
+        width={520}
+        onClose={() => setTxDrawerOpen(false)}
+        open={txDrawerOpen}
+        destroyOnClose
+      >
+        <Table
+          rowKey='id'
+          loading={txLoading}
+          dataSource={transactions}
+          pagination={{
+            current: txPage,
+            pageSize: txPageSize,
+            total: txTotal,
+            showSizeChanger: true
+          }}
+          onChange={(pagination: any) => {
+            const { current, pageSize } = pagination || {}
+            if (typeof current === 'number') setTxPage(current)
+            if (typeof pageSize === 'number') setTxPageSize(pageSize)
+          }}
+          columns={[
+            {
+              title: 'Date',
+              dataIndex: 'timestamp',
+              render: (v: string) => new Date(v).toLocaleString()
+            },
+            {
+              title: 'Type',
+              dataIndex: 'type'
+            },
+            {
+              title: 'Amount',
+              dataIndex: 'amount',
+              render: (v: number) =>
+                new Intl.NumberFormat(undefined, {
+                  style: 'currency',
+                  currency: 'ETB'
+                }).format(v ?? 0)
+            },
+            {
+              title: 'Remarks',
+              dataIndex: 'remarks'
+            }
+          ]}
+        />
+      </Drawer>
 
       {/* MODALS (unchanged logic) */}
       {/* <Modal title='Deposit' open={isDepositOpen} onOk={() => {}} onCancel={() => setDepositOpen(false)} />
