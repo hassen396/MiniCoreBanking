@@ -49,16 +49,16 @@ export default function DashboardContent ({
   const [loading, setLoading] = useState(false)
 
   const [accounts, setAccounts] = useState<any[]>([]) // user accounts
-  const [adminAccounts, setAdminAccounts] = useState<any[]>([]) // paginated admin accounts
+  const [tellerAccounts, setTellerAccounts] = useState<any[]>([]) // paginated teller accounts
 
   const [usersCount, setUsersCount] = useState(0)
   const [accountCount, setAccountCount] = useState(0)
 
-  // Admin pagination state
-  const [adminPageNumber, setAdminPageNumber] = useState(1)
-  const [adminPageSize, setAdminPageSize] = useState(5)
+  // Teller pagination state
+  const [tellerPageNumber, setTellerPageNumber] = useState(1)
+  const [tellerPageSize, setTellerPageSize] = useState(5)
 
-  // Admin transaction viewing state
+  // Teller transaction viewing state
   const [selectedAccountNumber, setSelectedAccountNumber] = useState<
     string | null
   >(null)
@@ -96,10 +96,10 @@ export default function DashboardContent ({
     }
   }
 
-  const reloadAdminAccounts = async () => {
+  const reloadTellerAccounts = async () => {
     try {
-      const accountsRes = await getAllAccounts(adminPageNumber, adminPageSize)
-      setAdminAccounts(accountsRes.data.accounts ?? [])
+      const accountsRes = await getAllAccounts(tellerPageNumber, tellerPageSize)
+      setTellerAccounts(accountsRes.data.accounts ?? [])
       setAccountCount(accountsRes.data.totalCount ?? 0)
     } catch {
       // swallow; handled by outer load
@@ -111,7 +111,7 @@ export default function DashboardContent ({
     pageNumber = txPage,
     pageSize = txPageSize
   ) => {
-    if (role !== 'Admin') return
+    if (role !== 'Teller') return
     try {
       setTxLoading(true)
       const res = await getTransactionsByAccount(
@@ -133,13 +133,13 @@ export default function DashboardContent ({
       try {
         setLoading(true)
 
-        if (role === 'Admin') {
+        if (role === 'Teller') {
           const [accountsRes, usersRes] = await Promise.all([
-            getAllAccounts(adminPageNumber, adminPageSize),
+            getAllAccounts(tellerPageNumber, tellerPageSize),
             GetUsersCount()
           ])
 
-          setAdminAccounts(accountsRes.data.accounts ?? [])
+          setTellerAccounts(accountsRes.data.accounts ?? [])
           setAccountCount(accountsRes.data.totalCount ?? 0)
           setUsersCount(usersRes.data ?? 0)
         } else {
@@ -155,10 +155,10 @@ export default function DashboardContent ({
     }
 
     load()
-  }, [adminPageNumber, adminPageSize])
+  }, [tellerPageNumber, tellerPageSize])
 
   useEffect(() => {
-    if (role !== 'Admin') return
+    if (role !== 'Teller') return
     if (!selectedAccountNumber) return
     loadTransactions(selectedAccountNumber, txPage, txPageSize)
   }, [selectedAccountNumber, txPage, txPageSize])
@@ -194,7 +194,7 @@ export default function DashboardContent ({
       message.success('Deposit successful')
       setDepositOpen(false)
       form.resetFields()
-      if (role === 'Admin') await reloadAdminAccounts()
+      if (role === 'Teller') await reloadTellerAccounts()
       else await reloadUserAccounts()
     } catch (err) {
       message.error('Deposit failed')
@@ -212,7 +212,7 @@ export default function DashboardContent ({
       message.success('Withdraw successful')
       setWithdrawOpen(false)
       form.resetFields()
-      if (role === 'Admin') await reloadAdminAccounts()
+      if (role === 'Teller') await reloadTellerAccounts()
       else await reloadUserAccounts()
     } catch (err) {
       message.error('Withdraw failed')
@@ -253,10 +253,10 @@ export default function DashboardContent ({
         <Col xs={24} md={12} xl={6}>
           <Card>
             <Typography.Text type='secondary'>
-              {role === 'Admin' ? 'Total Users' : 'Total Balance'}
+              {role === 'Teller' ? 'Total Users' : 'Total Balance'}
             </Typography.Text>
             <Typography.Title level={3} style={{ margin: 0 }}>
-              {role === 'Admin'
+              {role === 'Teller'
                 ? usersCount
                 : new Intl.NumberFormat(undefined, {
                     style: 'currency',
@@ -270,14 +270,14 @@ export default function DashboardContent ({
           <Card>
             <Typography.Text type='secondary'>Total Accounts</Typography.Text>
             <Typography.Title level={3} style={{ margin: 0 }}>
-              {role === 'Admin' ? accountCount : accounts.length}
+              {role === 'Teller' ? accountCount : accounts.length}
             </Typography.Title>
           </Card>
         </Col>
       </Row>
 
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-        {role !== 'Admin' && (
+        {role !== 'Teller' && (
           <Col xs={24} xl={14}>
             <Card title='Balances by Account'>
               <Bar {...chartConfig} height={300} />
@@ -285,22 +285,22 @@ export default function DashboardContent ({
           </Col>
         )}
 
-        <Col xs={24} xl={role === 'Admin' ? 24 : 10}>
-          <Card title={role === 'Admin' ? 'All Accounts' : 'My Accounts'}>
+        <Col xs={24} xl={role === 'Teller' ? 24 : 10}>
+          <Card title={role === 'Teller' ? 'All Accounts' : 'My Accounts'}>
             <Table
               loading={loading}
               rowKey='id'
               pagination={
-                role === 'Admin'
+                role === 'Teller'
                   ? {
-                      current: adminPageNumber,
-                      pageSize: adminPageSize,
+                      current: tellerPageNumber,
+                      pageSize: tellerPageSize,
                       total: accountCount,
                       showSizeChanger: true
                     }
                   : false
               }
-              dataSource={role === 'Admin' ? adminAccounts : accounts}
+              dataSource={role === 'Teller' ? tellerAccounts : accounts}
               columns={[
                 { title: 'Account Number', dataIndex: 'accountNumber' },
                 {
@@ -327,13 +327,13 @@ export default function DashboardContent ({
                 }
               ]}
               onChange={(pagination: any) => {
-                if (role !== 'Admin') return
+                if (role !== 'Teller') return
                 const { current, pageSize } = pagination || {}
-                if (typeof current === 'number') setAdminPageNumber(current)
-                if (typeof pageSize === 'number') setAdminPageSize(pageSize)
+                if (typeof current === 'number') setTellerPageNumber(current)
+                if (typeof pageSize === 'number') setTellerPageSize(pageSize)
               }}
               onRow={(record: any) =>
-                role === 'Admin'
+                role === 'Teller'
                   ? {
                       onClick: () => {
                         const accountNumber = record?.accountNumber
@@ -348,7 +348,7 @@ export default function DashboardContent ({
               }
             />
 
-            {role !== 'Admin' && (
+            {role !== 'Teller' && (
               <Space style={{ marginTop: 16 }}>
                 <Button type='primary' onClick={() => setDepositOpen(true)}>
                   Deposit
@@ -399,7 +399,7 @@ export default function DashboardContent ({
             label='Account Number'
             rules={[{ required: true }]}
           >
-            {role === 'Admin' ? (
+            {role === 'Teller' ? (
               <Input placeholder='Enter account number' />
             ) : (
               <Select

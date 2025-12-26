@@ -14,8 +14,7 @@ const Register = () => {
     const navigate = useNavigate();
   const onFinish = async (values: UserTypes) => {
 try {
-    const response = await register(values.firstName, values.lastName, values.email, values.password);
-    console.log("Registration successful:", response.data);
+     await register(values.firstName, values.lastName, values.email, values.password);
     message.success("Registration successful! Please log in.");
     navigate("/login");
   } catch (error) {

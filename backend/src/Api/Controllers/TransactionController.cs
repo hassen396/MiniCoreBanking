@@ -33,7 +33,7 @@ namespace API.Controllers
         }
 
         [HttpPost("transfer")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Teller")]
         public async Task<IActionResult> Transfer([FromBody] TransferDto dto)
         {
             await _transactionService.TransferAsync(dto.FromAccountNumber, dto.ToAccountNumber, dto.Amount);
@@ -41,7 +41,7 @@ namespace API.Controllers
         }
 
         [HttpGet("{accountNumber}/transactions")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Teller")]
         public async Task<IActionResult> GetTransactions(
             string accountNumber,
             [FromQuery] int pageNumber = 1,

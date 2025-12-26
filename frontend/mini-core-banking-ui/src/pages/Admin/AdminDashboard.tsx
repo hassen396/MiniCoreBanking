@@ -36,11 +36,11 @@ const Icon: React.FC<IconProps> = ({ icon, ...props }) => {
 
 const { Header, Footer, Sider } = Layout
 
-export default function AdminDashboard (): JSX.Element {
+export default function TellerDashboard (): JSX.Element {
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(false)
   const [search, setSearch] = useState('')
-  const [admin, setUser] = useState<any>(null)
+  const [teller, setUser] = useState<any>(null)
   const [activeKey, setActiveKey] = useState<string>('/dashboard')
   const [depositOpen, setDepositOpen] = useState<boolean>(false)
   const [withdrawOpen, setWithdrawOpen] = useState<boolean>(false)
@@ -156,9 +156,9 @@ export default function AdminDashboard (): JSX.Element {
                     maxWidth: '40vw'
                   }}
                 >
-                  {admin
+                  {teller
                     ? `Welcome, ${
-                        admin?.firstName ?? admin?.userName ?? 'User'
+                        teller?.firstName ?? teller?.userName ?? 'User'
                       }`
                     : 'Dashboard'}
                 </Typography.Title>
@@ -200,8 +200,8 @@ export default function AdminDashboard (): JSX.Element {
                 }}
               >
                 <Button type='text' icon={<Icon icon='UserOutlined' />}>
-                  {admin
-                    ? admin?.firstName ?? admin?.userName ?? 'Account'
+                  {teller
+                    ? teller?.firstName ?? teller?.userName ?? 'Account'
                     : 'Account'}
                 </Button>
               </Dropdown>

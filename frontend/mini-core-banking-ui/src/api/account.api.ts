@@ -40,7 +40,6 @@ export const GetAccountsCount= ()=>
 }
 
 export const getAllAccounts = (pageNumber: number, pageSize: number) => {
-  console.log(pageNumber, pageSize, 'num and size')
   return api.get(`/accounts/list?pageNumber=${pageNumber}&pageSize=${pageSize}`, {
     headers: authHeader()
   })

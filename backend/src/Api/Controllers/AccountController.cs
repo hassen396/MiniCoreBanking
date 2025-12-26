@@ -22,7 +22,7 @@ namespace API.Controllers
         }
 
         [HttpPost("create")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Teller")]
         public async Task<IActionResult> CreateAccount([FromBody] CreateAccountDto createAccountDto)
         {
             if (string.IsNullOrWhiteSpace(createAccountDto.UserName))
@@ -68,7 +68,7 @@ namespace API.Controllers
             return Ok(balance);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Teller")]
         [HttpGet("get-accounts-count")]
         public async Task<ActionResult> GetAccountsCount()
         {
@@ -76,7 +76,7 @@ namespace API.Controllers
             return Ok(count);
         }
         //paginated list of accounts return 15 per page
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Teller")]
         [HttpGet("list")]
         public async Task<IActionResult> GetAccountsList([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 15)
         {

@@ -4,7 +4,7 @@ import DashboardPage from '../pages/User/DashboardPage'
 import ProfilePage from '../features/accounts/pages/ProfilePage'
 import Register from '../pages/Auth/Register'
 import Logout from '../pages/Auth/Logout'
-import AdminDashboard from '../pages/Admin/AdminDashboard'
+import TellerDashboard from '../pages/Admin/AdminDashboard'
 import CreateAccount from '../pages/Account/CreateAccount'
 
 const AppRouter = () => (
@@ -16,7 +16,8 @@ const AppRouter = () => (
     <Route path='/user/dashboard' element={<DashboardPage />} />
     <Route path='/' element={<DashboardPage />} />
     <Route path='/profile' element={<ProfilePage />} />
-    <Route path='/admin/dashboard' element={<AdminDashboard />}/>
+    <Route path='/teller/dashboard' element={<TellerDashboard />} />
+    <Route path='/admin/dashboard' element={<TellerDashboard />} />
   </Routes>
 )
 

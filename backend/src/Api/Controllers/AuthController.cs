@@ -19,7 +19,7 @@ public class AuthController : ControllerBase
         _userManager = userManager;
         _tokenService = tokenService;
     }
-    [Authorize(Roles ="Admin")]
+    [Authorize(Roles = "Teller")]
     [HttpPost("create-user")]
     public async Task<IActionResult> Register([FromBody] AuthDtos.RegisterRequest request)
     {
@@ -42,7 +42,7 @@ public class AuthController : ControllerBase
     }
 
     //update existing user
-    [Authorize(Roles ="Admin")]
+    [Authorize(Roles = "Teller")]
     [HttpPost("update-user")]
     public async Task<IActionResult> UpdateUser(AuthDtos.UpdateUserRequest updatedUserRequest)
     {
@@ -59,15 +59,15 @@ public class AuthController : ControllerBase
         {
             return BadRequest(result.Errors);
         }
-        return Ok("user updated successfully");    
+        return Ok("user updated successfully");
     }
 
-    [HttpPost("register-admin")]
-    public async Task<IActionResult> RegisterAdmin([FromBody] AuthDtos.RegisterRequest request)
+    [HttpPost("register-teller")]
+    public async Task<IActionResult> RegisterTeller([FromBody] AuthDtos.RegisterRequest request)
     {
         var user = new ApplicationUser
         {
-            UserName =  request.Email,
+            UserName = request.Email,
             Email = request.Email,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
@@ -79,8 +79,8 @@ public class AuthController : ControllerBase
         {
             return BadRequest(result.Errors);
         }
-        await _userManager.AddToRoleAsync(user, "Admin");
-        return Ok("admin created successfully");
+        await _userManager.AddToRoleAsync(user, "Teller");
+        return Ok("teller created successfully");
     }
 
     [HttpPost("login")]
@@ -136,23 +136,23 @@ public class AuthController : ControllerBase
         if (userId == null) return Unauthorized();
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null) return Unauthorized();
-        return Ok(new {  user.Id, user.FirstName, user.LastName, user.UserName, user.Email });
+        return Ok(new { user.Id, user.FirstName, user.LastName, user.UserName, user.Email });
     }
 
-    //admin only
-    [Authorize(Roles = "Admin")]
-    [HttpGet("admin-only")]
-    public IActionResult AdminOnly()
+    //teller only
+    [Authorize(Roles = "Teller")]
+    [HttpGet("teller-only")]
+    public IActionResult TellerOnly()
     {
-        return Ok("you are an admin");
+        return Ok("you are a teller");
     }
 
-    //user and admin
-    [Authorize(Roles = "User,Admin")]
-    [HttpGet("user-and-admin")]
-    public IActionResult UserAndAdmin()
+    //user and teller
+    [Authorize(Roles = "User,Teller")]
+    [HttpGet("user-and-teller")]
+    public IActionResult UserAndTeller()
     {
-        return Ok("you are a user or an admin");
+        return Ok("you are a user or a teller");
     }
 
     //any authenticated user
@@ -171,7 +171,7 @@ public class AuthController : ControllerBase
         return Ok("you are a user");
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Teller")]
     [HttpGet("get-user-cont")]
     public IActionResult GetUsersCount()
     {
